@@ -12,7 +12,6 @@
 <body>
 </body>
 <script type="text/javascript" src="./js/phaser.min.js"></script>
-<script type="text/javascript" src="./js/phaser-spine.min.js"></script>
 <script type="text/javascript">
   var game = new Phaser.Game(360, 640, Phaser.CANVAS, null, {
     preload: preload,
@@ -22,9 +21,7 @@
   });
   var instruction; //게임 시작 전 화면 배경
   var startBtn; //시작버튼
-
   var bg; // 게임 배경 이미지
-
   var box; // 그룹 형성용 이미지
   var player // 플레이어
   var enemy; // 회피물
@@ -37,6 +34,12 @@
   var score = 0; // 점수
   var txtScore;
   var eventScore;
+  var img_1;//1
+  var img_2;//2
+  var img_3;//3
+  var img_GO;//GO!
+  var isHit=false; //충돌 유무 확인
+  var player_y_record=-1;//최초 플레이어 y지점 기록
 
 
   /* -----PRELOAD----- */
@@ -50,9 +53,26 @@
     /* 그룹 형성 시에 사용할 박스 이미지 로드 */
     game.load.image("box", "./images/box.png");
     /* 플레이어를 기본 32x40 크기로 설정. 'player' 이름으로 생성 */
-    game.load.spritesheet("player", "./images/player.png", 32, 40);
+    game.load.spritesheet("player", "./images/player.png", 256, 256);
     /* 회피물 로드 */
     game.load.image("enemy", "./images/enemy.png");
+    /* 카운트다운 이미지 로드 */
+    game.load.image("img_1", "./images/count/1.png");
+    game.load.image("img_2", "./images/count/2.png");
+    game.load.image("img_3", "./images/count/3.png");
+    game.load.image("img_GO", "./images/count/GO!.png");
+    /* 아이템 로드 */
+    game.load.image("g_obj_01", "./images/items/g_obj_01.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_02.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_03.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_04.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_05.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_06.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_07.png");
+    game.load.image("g_obj_01", "./images/items/g_obj_08.png");
+    game.load.image("g_obj_01", "./images/items/jadamteo.png");
+
+
   }
 
 
@@ -80,13 +100,11 @@
     );
     startBtn.scale.setTo(0.5, 0.5);
 
-
-
     // create a custom time
     timer = game.time.create();
 
     // create a delayed event 1m and 30s from now
-    timerEvent = timer.add(Phaser.Timer.MINUTE * 1 + Phaser.Timer.SECOND * 30, this.endTimer, this);
+    timerEvent = timer.add(Phaser.Timer.MINUTE * 2, this.endTimer, this);
 
 
     /* box 그룹 생성 */
@@ -133,13 +151,14 @@
       //  400 is the speed it will move towards the mouse
       //game.physics.arcade.moveToPointer(player, 400);
       game.physics.arcade.moveToXY(player, game.input.x, game.height, 1000);
-      if (game.input.mousePointer.x > player.x) {
-        player.animations.play("right");
-      } else if (game.input.mousePointer.x < player.x) {
-        player.animations.play("left");
+      if(isHit) {
+        player.animations.play("good");
+      }
+      else if (game.input.mousePointer.x > player.x || game.input.mousePointer.x < player.x) {
+        player.animations.play("run");
       } else {
-        player.animations.stop();
-        player.frame = 3;
+        //player.animations.stop();
+        // player.frame = 3;
       }
     }
 
@@ -157,8 +176,9 @@
       // box 중 랜덤으로 하나를 골라서 회피물 생성
       if (enemyAlive && enemyArray.length > 0) {
         var random = game.rnd.integerInRange(0, enemy.length - 1);
-        var enemyBox = enemyArray[random];
-        enemyAlive.reset(enemyBox.body.x, 80);
+        //var enemyBox = enemyArray[random];
+        var x = getRandomInt(10,game.width-20);
+        enemyAlive.reset(x, 80);
         game.physics.arcade.moveToXY(enemyAlive, enemyAlive.x, game.height, 150);
       }
     }
@@ -196,44 +216,131 @@
 
 
   function enemyHitsPlayer(playerPoint, enemy) {
+    if(player_y_record==-1){
+      player_y_record=player.y;
+    }
     enemy.kill();
+    isHit=true;
+    //20 만큼 점프
+    player.y=player_y_record-10;
     //life = 0;
     //txtGameover.visible = true;
     score++;
     txtScore.setText("Score: " + score);
+    setTimeout(function() {
+      isHit=false;
+    }, 500);
   }
 
   function startBtnClick() {
     instruction.visible = false;
     startBtn.visible = false;
 
+    /* start countdown animation */
+    popupCount();
+  }
+
+  function count_GO(millisecondsToWait, ratio) {
+    img_GO = game.add.sprite(
+      (game.world.centerX - (game.cache.getImage("img_GO").width * 1.2) / 2), (game.world.centerY - (game.cache.getImage("img_GO").height * 1.2 / 2)), "img_GO"
+    );
+    img_GO.scale.setTo(1.2, 1.2);
+
+    // pop_GO = game.add.tween(img_GO.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+    setTimeout(function() {
+      // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+      img_GO.visible = false;
+      gameStart();
+    }, millisecondsToWait);
+  }
+
+  function count_1(millisecondsToWait, ratio) {
+    img_1 = game.add.sprite(
+      (game.world.centerX - (game.cache.getImage("img_1").width) / 2), (game.world.centerY - (game.cache.getImage("img_1").height / 2)), "img_1"
+    );
+
+    // pop_1 = game.add.tween(img_1.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+    setTimeout(function() {
+      // pop_1 = game.add.tween(img_1.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
+      // count_GO(millisecondsToWait,ratio);
+      img_1.visible = false;
+      count_GO(millisecondsToWait);
+    }, millisecondsToWait);
+  }
+
+  function count_2(millisecondsToWait, ratio) {
+    img_2 = game.add.sprite(
+      (game.world.centerX - (game.cache.getImage("img_2").width) / 2), (game.world.centerY - (game.cache.getImage("img_2").height / 2)), "img_2"
+    );
+
+    // pop_2 = game.add.tween(img_2.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+    setTimeout(function() {
+      // pop_2 = game.add.tween(img_2.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
+      // count_1(millisecondsToWait,ratio);
+      img_2.visible = false;
+      count_1(millisecondsToWait);
+    }, millisecondsToWait);
+  }
+
+  function count_3(millisecondsToWait, ratio) {
+    img_3 = game.add.sprite(
+      (game.world.centerX - (game.cache.getImage("img_3").width) / 2), (game.world.centerY - (game.cache.getImage("img_3").height / 2)), "img_3"
+    );
+    // img_3.anchor.set(0.5);
+    // img_3.smoothed = false;
+    //
+    // game.physics.enable(img_3, Phaser.Physics.ARCADE);
+    // img_3.body.immovable = true;
 
 
-    for (var i = 0; i < game.width / 40; i++) {
-      var rowBox = box.create(i * 40, 80, "box");
+
+    // pop_3 = game.add.tween(img_3.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+    // game.add.tween(img_3.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Linear.None, true);
+    setTimeout(function() {
+      // pop_3 = game.add.tween(img_3.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
+      // count_2(millisecondsToWait,ratio);
+      img_3.visible = false;
+      count_2(millisecondsToWait);
+    }, millisecondsToWait);
+  }
+
+  function popupCount() {
+    var millisecondsToWait = 700;
+    //var ratio=2;
+
+    //count_3(millisecondsToWait,ratio);
+    count_3(millisecondsToWait);
+  }
+
+  function gameStart() {
+    for (var i = 0; i < game.width / 10; i++) {
+      var rowBox = box.create(i * 10, 80, "box");
       rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
-      rowBox = box.create(i * 40, game.height - 40, "box");
+      rowBox = box.create(i * 10, game.height - 10, "box");
       rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
     }
-    for (var j = 3; j < game.height / 40; j++) {
-      var colBox = box.create(0, j * 40, "box");
+    for (var j = 9; j < game.height / 10; j++) {
+      var colBox = box.create(0, j * 10, "box");
       colBox.body.immovable = true; // box가 움직이지 못하도록 설정
-      colBox = box.create(game.width - 40, j * 40, "box");
+      colBox = box.create(game.width - 10, j * 10, "box");
       colBox.body.immovable = true; // box가 움직이지 못하도록 설정
     }
 
     /* 플레이어 추가 */
-    player = game.add.sprite((game.width) / 2, game.height - 80, "player");
+    player = game.add.sprite((game.width) / 2, (game.height) / 2, "player");
+    player.scale.setTo(0.5,0.5);
     game.physics.arcade.enable(player);
-    // 0,1,2 번째 프레임을 0.1초 단위로 반복하는 애니메이션 생성
-    player.animations.add("left", [0, 1, 2], 10, true);
-    // 4,5,6 번째 프레임을 0.1초 단위로 반복하는 애니메이션 생성
-    player.animations.add("right", [4, 5, 6], 10, true);
+    // 평상시 뛰는 애니메이션
+    player.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
+    // 긍정적 아이템 습득시 애니메이션
+    player.animations.add("good", [9], 10, false);
+    // 부정적 아이템 습득시 애니메이션
+    player.animations.add("bad", [8], 10, false);
 
     enemy.enableBody = true;
     enemy.physicsBodyType = Phaser.Physics.ARCADE;
     enemy.createMultiple(5, "enemy");
-    // enemy 변수가 겡미 레이어 밖으로 벗어나면 해당 객체를 삭제
+    // enemy 변수가 게임 레이어 밖으로 벗어나면 해당 객체를 삭제
     enemy.setAll("outOfBoundsKill", true);
     enemy.setAll("checkWorldBounds", true);
 
@@ -243,6 +350,29 @@
     timer.start();
 
   }
+
+  /**
+ * Randomize array element order in-place.
+ * Using Durstenfeld shuffle algorithm.
+ */
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+/**
+ * Returns a random integer between min (inclusive) and max (inclusive)
+ * Using Math.round() will give you a non-uniform distribution!
+ */
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 </script>
 
 </html>
