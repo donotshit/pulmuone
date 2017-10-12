@@ -28,7 +28,6 @@
   var enemyAlive; // 회피물 존재 여부
   var enemyArray = []; // 생성될 회피물의 정보
   var life = 1; // 플레이어 생명
-  var txtGameover; // 게임오버 텍스트
   var timer; // 타이머
   var timerEvent; // 타이머 이벤트
   var score = 0; // 점수
@@ -40,6 +39,8 @@
   var img_GO;//GO!
   var isHit=false; //충돌 유무 확인
   var player_y_record=-1;//최초 플레이어 y지점 기록
+  var gameover_clear;//게임오버-성공 이미지
+  var gameover_fail;//게임오버-실패 이미지
 
 
   /* -----PRELOAD----- */
@@ -63,14 +64,18 @@
     game.load.image("img_GO", "./images/count/GO!.png");
     /* 아이템 로드 */
     game.load.image("g_obj_01", "./images/items/g_obj_01.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_02.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_03.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_04.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_05.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_06.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_07.png");
-    game.load.image("g_obj_01", "./images/items/g_obj_08.png");
-    game.load.image("g_obj_01", "./images/items/jadamteo.png");
+    game.load.image("g_obj_02", "./images/items/g_obj_02.png");
+    game.load.image("g_obj_03", "./images/items/g_obj_03.png");
+    game.load.image("g_obj_04", "./images/items/g_obj_04.png");
+    game.load.image("g_obj_05", "./images/items/g_obj_05.png");
+    game.load.image("g_obj_06", "./images/items/g_obj_06.png");
+    game.load.image("g_obj_07", "./images/items/g_obj_07.png");
+    game.load.image("g_obj_08", "./images/items/g_obj_08.png");
+    game.load.image("jadamteo", "./images/items/jadamteo.png");
+
+    /* 게임오버 이미지 로드 */
+    game.load.image("clear", "./images/clear.png");
+    game.load.image("fail", "./images/fail.png");
 
 
   }
@@ -104,7 +109,8 @@
     timer = game.time.create();
 
     // create a delayed event 1m and 30s from now
-    timerEvent = timer.add(Phaser.Timer.MINUTE * 2, this.endTimer, this);
+  //  timerEvent = timer.add(Phaser.Timer.MINUTE * 2, this.endTimer, this);
+  timerEvent = timer.add(Phaser.Timer.SECOND * 5, this.endTimer, this);
 
 
     /* box 그룹 생성 */
@@ -116,12 +122,7 @@
 
 
     /* Game Over */
-    txtGameover = game.add.text(game.world.centerX, game.world.centerY, "Game Over", {
-      font: "70px Arial",
-      fill: "#FFFFFF"
-    });
-    txtGameover.anchor.setTo(0.5, 0.5);
-    txtGameover.visible = false;
+
 
     /* Score */
     txtScore = game.add.text(20, 10, "Score: 0", {
@@ -202,7 +203,9 @@
     // Stop the timer when the delayed event triggers
     timer.stop();
     life = 0;
-    txtGameover.visible = true;
+    clear = game.add.sprite(x,y, "instruction"
+    );
+
   }
 
 
@@ -224,7 +227,6 @@
     //20 만큼 점프
     player.y=player_y_record-10;
     //life = 0;
-    //txtGameover.visible = true;
     score++;
     txtScore.setText("Score: " + score);
     setTimeout(function() {
@@ -339,7 +341,8 @@
 
     enemy.enableBody = true;
     enemy.physicsBodyType = Phaser.Physics.ARCADE;
-    enemy.createMultiple(5, "enemy");
+    enemy.createMultiple(5, "g_obj_01");
+    enemy.scale.setTo(0.2,0.2);
     // enemy 변수가 게임 레이어 밖으로 벗어나면 해당 객체를 삭제
     enemy.setAll("outOfBoundsKill", true);
     enemy.setAll("checkWorldBounds", true);
