@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Pulmuone</title>
+  <style media="screen">
+
+  </style>
+</head>
+
+<body>
+</body>
+<script type="text/javascript" src="./js/phaser.min.js"></script>
+<script type="text/javascript">
+  var game = new Phaser.Game(360, 640, Phaser.CANVAS, null, {
+    preload: preload,
+    create: create,
+    update: update,
+    render: render,
+  });
+  var start; // 로고 화면
+  var firstBtn; //로고 화면 버튼
+  var muteBtn_on; // 음소거 버튼(활성화)
+  var muteBtn_off; // 음소거 버튼(비활성화)
+  var instruction; //게임 시작 전 화면 배경
+  var startBtn; //시작버튼
+  var bg; // 게임 배경 이미지
+  var box; // 그룹 형성용 이미지
+  var player // 플레이어
+  var enemy; // 회피물
+  var enemyAlive; // 회피물 존재 여부
+  var enemyArray = []; // 생성될 회피물의 정보
+  var life = 1; // 플레이어 생명
+  var timer; // 타이머
+  var timerEvent; // 타이머 이벤트
+  var score = 0; // 점수
+  var txtScore;
+  var eventScore;
+  var img_1; //1
+  var img_2; //2
+  var img_3; //3
+  var img_GO; //GO!
+  var isHit = false; //충돌 유무 확인
+  var player_y_record = -1; //최초 플레이어 y지점 기록
+  var game_over; //게임오버 이미지
+  var basketBtn; // 장바구니 확인 버튼
+  var basket_board; // 장바구니 배경 이미지
+  var resultBtn; // 결과창 이동 버튼
+
+  var endTimer = /* -----ENDTIMER----- */
+    function endTimer() {
+      // Stop the timer when the delayed event triggers
+      timer.stop();
+      life = 0;
+      game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
+      game_over.scale.setTo(0.5, 0.5);
+
+      setTimeout(
+        function() {
+          basketBtn = game.add.button(
+            (game.cache.getImage("background").width - game.cache.getImage("basketBtn").width) / 4, game.height * 0.75, "basketBtn", basketBtnClick, this, 1, 1, 0
+          );
+          basketBtn.scale.setTo(0.5, 0.5);
+        }, 1000)
+    };
+
+
+  /* -----PRELOAD----- */
+  function preload() {
+    //게임에 필요한 데이터 로드
+    /* 게임 시작전 화면 이미지 로드 */
+    game.load.image("start", "./images/start.png");
+    game.load.image("muteBtn_on", "./images/muteBtn_on.png");
+    game.load.image("muteBtn_off", "./images/muteBtn_off.png");
+    game.load.image("instruction", "./images/instruction.png");
+    game.load.image("startBtn", "./images/startBtn.png");
+    /* 배경 이미지 로드 */
+    game.load.image("background", "./images/background.png");
+    /* 그룹 형성 시에 사용할 박스 이미지 로드 */
+    game.load.image("box", "./images/box.png");
+    /* 플레이어를 기본 32x40 크기로 설정. 'player' 이름으로 생성 */
+    game.load.spritesheet("player", "./images/player.png", 256, 256);
+    /* 회피물 로드 */
+    game.load.image("enemy", "./images/enemy.png");
+    /* 카운트다운 이미지 로드 */
+    game.load.image("img_1", "./images/count/1.png");
+    game.load.image("img_2", "./images/count/2.png");
+    game.load.image("img_3", "./images/count/3.png");
+    game.load.image("img_GO", "./images/count/GO!.png");
+    /* 아이템 로드 */
+    game.load.image("g_obj_01", "./images/items/g_obj_01.png");
+    game.load.image("g_obj_02", "./images/items/g_obj_02.png");
+    game.load.image("g_obj_03", "./images/items/g_obj_03.png");
+    game.load.image("g_obj_04", "./images/items/g_obj_04.png");
+    game.load.image("g_obj_05", "./images/items/g_obj_05.png");
+    game.load.image("g_obj_06", "./images/items/g_obj_06.png");
+    game.load.image("g_obj_07", "./images/items/g_obj_07.png");
+    game.load.image("g_obj_08", "./images/items/g_obj_08.png");
+    game.load.image("jadamteo", "./images/items/jadamteo.png");
+
+    /* 게임오버 이미지 로드 */
+    game.load.image("clear", "./images/clear.png");
+    game.load.image("fail", "./images/fail.png");
+
+    /* 바구니 확인 버튼 로드 */
+    game.load.image("basketBtn", "./images/basketBtn.png");
+    /* 바구니 확인 board 로드 */
+    game.load.image("basket_board", "./images/basket_board.png");
+    /* 결과창 이동 버튼 로드 */
+    game.load.image("resultBtn", "./images/resultBtn.png");
+  }
+
+
+
+
+  /* -----CREATE----- */
+  function create() {
+
+    /* 게임 처음 실행 시 수행되는 함수 */
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    /* 배경화면 설정 */
+    bg = game.add.sprite(0, 0, "background");
+    //비율 설정
+    bg.scale.setTo(0.5, 0.5);
+
+    /* 게임 시작 전 화면 설정 */
+    instruction = game.add.sprite(
+      (game.cache.getImage("background").width - game.cache.getImage("instruction").width) / 4, game.height / 16, "instruction"
+    );
+    instruction.scale.setTo(0.5, 0.5);
+
+    startBtn = game.add.button(
+      (game.cache.getImage("background").width - game.cache.getImage("startBtn").width) / 4, game.height * 0.75, "startBtn", startBtnClick, this, 1, 1, 0
+    );
+    startBtn.scale.setTo(0.5, 0.5);
+
+
+
+    // create a custom time
+    timer = game.time.create();
+
+    // create a delayed event 1m and 30s from now
+    timerEvent = timer.add(Phaser.Timer.MINUTE * 1 + Phaser.Timer.SECOND * 30, this.endTimer, this);
+
+
+    /* box 그룹 생성 */
+    box = game.add.group();
+    box.enableBody = true; // box에 출돌속성을 설정.
+
+    /* 회피물 생성 */
+    enemy = game.add.group();
+
+
+    /* Game Over */
+    txtGameover = game.add.text(game.world.centerX, game.world.centerY, "Game Over", {
+      font: "70px Arial",
+      fill: "#FFFFFF"
+    });
+    txtGameover.anchor.setTo(0.5, 0.5);
+    txtGameover.visible = false;
+
+    /* Score */
+    txtScore = game.add.text(20, 10, "Score: 0", {
+      fontSize: "70px Arial",
+      fill: "#FFFFFF"
+    });
+    txtScore.visible = false;
+  }
+
+
+
+  /* -----UPDATE----- */
+  function update() {
+    /*  프레임워크에서 주기적으로 수행하는 함수 */
+    if (life < 1) {
+      return;
+    }
+    /* box 밖으로의 움직임 제한 */
+    game.physics.arcade.collide(player, box);
+
+    game.physics.arcade.overlap(player, enemy, enemyHitsPlayer, null, this);
+
+    /* 플레이어 움직임 정의 */
+    if (player != undefined) {
+      player.body.velocity.setTo(0, 0); // 관성을 0으로 설정
+
+      //  400 is the speed it will move towards the mouse
+      //game.physics.arcade.moveToPointer(player, 400);
+      game.physics.arcade.moveToXY(player, game.input.x, game.height, 1000);
+      if (game.input.mousePointer.x > player.x) {
+        player.animations.play("right");
+      } else if (game.input.mousePointer.x < player.x) {
+        player.animations.play("left");
+      } else {
+        player.animations.stop();
+        player.frame = 3;
+      }
+    }
+
+
+
+
+    if (enemy != undefined) {
+      /* 회피물 세팅 */
+      enemyAlive = enemy.getFirstExists(false);
+      enemyArray.length = 0;
+      // box 개수 만큼 회피물을 세팅
+      box.forEachAlive(function(enemyAlive) {
+        enemyArray.push(enemyAlive);
+      });
+      // box 중 랜덤으로 하나를 골라서 회피물 생성
+      if (enemyAlive && enemyArray.length > 0) {
+        var random = game.rnd.integerInRange(0, enemy.length - 1);
+        var enemyBox = enemyArray[random];
+        enemyAlive.reset(enemyBox.body.x, 80);
+        game.physics.arcade.moveToXY(enemyAlive, enemyAlive.x, game.height, 150);
+      }
+    }
+  }
+
+
+  /* -----RENDER----- */
+  function render() {
+    if (timer.running) {
+      // If our timer is running, show the time in a nicely formatted way,fontSize:"70px Arial",fill: "#FFFFFF"}
+      game.debug.text(formatTime(Math.round((timerEvent.delay - timer.ms) / 1000)), 80, 14, "#ff0");
+    } else {
+      // else show 'Done'!;
+      // game.debug.text("Done!",2,14,"#0f0");
+    }
+  }
+
+
+  /* -----ENDTIMER----- */
+  function endTimer() {
+    // Stop the timer when the delayed event triggers
+    timer.stop();
+    life = 0;
+    txtGameover.visible = true;
+  }
+
+
+  /* -----FORMATTIMER----- */
+  function formatTime(s) {
+    //convert seconds (s) to a nicely formatted and padded time string
+    var minutes = "0" + Math.floor(s / 60);
+    var seconds = "0" + (s - minutes * 60);
+    return minutes.substr(-2) + ":" + seconds.substr(-2);
+  }
+
+
+  function enemyHitsPlayer(playerPoint, enemy) {
+    enemy.kill();
+    //life = 0;
+    //txtGameover.visible = true;
+    score++;
+    txtScore.setText("Score: " + score);
+  }
+
+  function startBtnClick() {
+    instruction.visible = false;
+    startBtn.visible = false;
+
+
+
+    for (var i = 0; i < game.width / 40; i++) {
+      var rowBox = box.create(i * 40, 80, "box");
+      rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
+      rowBox = box.create(i * 40, game.height - 40, "box");
+      rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
+    }
+    for (var j = 3; j < game.height / 40; j++) {
+      var colBox = box.create(0, j * 40, "box");
+      colBox.body.immovable = true; // box가 움직이지 못하도록 설정
+      colBox = box.create(game.width - 40, j * 40, "box");
+      colBox.body.immovable = true; // box가 움직이지 못하도록 설정
+    }
+
+    /* 플레이어 추가 */
+    player = game.add.sprite((game.width) / 2, game.height - 80, "player");
+    game.physics.arcade.enable(player);
+    // 0,1,2 번째 프레임을 0.1초 단위로 반복하는 애니메이션 생성
+    player.animations.add("left", [0, 1, 2], 10, true);
+    // 4,5,6 번째 프레임을 0.1초 단위로 반복하는 애니메이션 생성
+    player.animations.add("right", [4, 5, 6], 10, true);
+
+    enemy.enableBody = true;
+    enemy.physicsBodyType = Phaser.Physics.ARCADE;
+    enemy.createMultiple(5, "enemy");
+    // enemy 변수가 겡미 레이어 밖으로 벗어나면 해당 객체를 삭제
+    enemy.setAll("outOfBoundsKill", true);
+    enemy.setAll("checkWorldBounds", true);
+
+    txtScore.visible = true;
+
+    // start the timer
+    timer.start();
+
+  }
+</script>
+
+</html>
