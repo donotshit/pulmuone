@@ -829,38 +829,38 @@
 
         var i = 0;
         /* 아이템 낙하 */
-        // easyMode = setInterval(
-        //     function() {
-        //       if (i == easyArr.length) {
-        //         hard=true;
-        //         i=0;
-        //         destroy(easyMode);
-        //       } else {
-        //         var item = easyArr[i];
-        //         item.visible = true;
-        //         game.physics.arcade.moveToXY(item, item.x, game.height, 150);
-        //         i++;
-        //       }
-        //     }, 1290
-        // );
-        //
-        // hardMode = setInterval(
-        //     function() {
-        //       if(hard) {
-        //         if (i == hardArr.length) {
-        //           hard=true;
-        //           i=0;
-        //           destroy(hardMode);
-        //         } else {
-        //           var item = hardArr[i];
-        //           item.visible = true;
-        //           game.physics.arcade.moveToXY(item, item.x, game.height, 300);
-        //           i++;
-        //         }
-        //       }
-        //
-        //     }, 597
-        // );
+        easyMode = setInterval(
+            function() {
+              if (i == easyArr.length) {
+                hard=true;
+                i=0;
+                destroy(easyMode);
+              } else {
+                var item = easyArr[i];
+                item.visible = true;
+                game.physics.arcade.moveToXY(item, item.x, game.height, 150);
+                i++;
+              }
+            }, 1290
+        );
+
+        hardMode = setInterval(
+            function() {
+              if(hard) {
+                if (i == hardArr.length) {
+                  hard=true;
+                  i=0;
+                  destroy(hardMode);
+                } else {
+                  var item = hardArr[i];
+                  item.visible = true;
+                  game.physics.arcade.moveToXY(item, item.x, game.height, 300);
+                  i++;
+                }
+              }
+
+            }, 597
+        );
 
         enemy.setAll("outOfBoundsKill", true);
         enemy.setAll("checkWorldBounds", true);
