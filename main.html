@@ -51,19 +51,50 @@
     var basket_board; // 장바구니 배경 이미지
     var resultBtn; // 결과창 이동 버튼
     var hard = false;
+    var easyMode;
+    var hardMode;
+    var finalScore;//최종점수
+    var final_text_1;
+    var final_text_2;
+    var restartBtn;
+    var good = true;
+    var a_123;
+    var a_button8;
+    var a_fail;
+    var a_game_bgm;
+    var a_go;
+    var a_object;
+    var a_start;
+    var a_success;
+    var linkBtn_1;
+    var linkBtn_2;
+    var linkBtn_3;
+    var linkBtn_4;
+    var tofu;
+    var after5;
 
     var endTimer = /* -----ENDTIMER----- */
         function endTimer() {
             // Stop the timer when the delayed event triggers
             timer.stop();
+            a_game_bgm.stop();
+            finalScore = score;
             life = 0;
-            game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
+            if(finalScore >= 100){
+              a_success.play();
+              game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
+
+            } else {
+              a_fail.play();
+              game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("fail").width / 4), game.height / 3, "fail");
+
+            }
             game_over.scale.setTo(0.5, 0.5);
 
             setTimeout(
                 function() {
                     basketBtn = game.add.button(
-                        (game.cache.getImage("background").width - game.cache.getImage("basketBtn").width) / 4, game.height * 0.75, "basketBtn", basketBtnClick, this, 1, 1, 0
+                        (game.cache.getImage("background").width - game.cache.getImage("basketBtn").width) / 4, game.height * 0.8, "basketBtn", basketBtnClick, this, 1, 1, 0
                     );
                     basketBtn.scale.setTo(0.5, 0.5);
                 }, 1000)
@@ -114,9 +145,23 @@
         game.load.image("basketBtn", "./images/basketBtn.png");
         /* 바구니 확인 board 로드 */
         game.load.image("basket_board", "./images/basket_board.png");
+        /* 제품보러가기 버튼 로드 */
+        game.load.image("linkBtn", "./images/linkBtn.png");
+
         /* 결과창 이동 버튼 로드 */
         game.load.image("resultBtn", "./images/resultBtn.png");
+        /* 재시작 버튼 추가 */
+        game.load.image("restartBtn", "./images/restartBtn.png");
 
+        /* 효과음 로드*/
+        game.load.audio('123', './audio/123.mp3');
+        game.load.audio('button8', './audio/button8.wav');
+        game.load.audio('fail', './audio/fail.mp3');
+        game.load.audio('game_bgm', './audio/game_bgm.mp3');
+        game.load.audio('go', './audio/go.mp3');
+        game.load.audio('object', './audio/object.mp3');
+        game.load.audio('start', './audio/start.mp3');
+        game.load.audio('success', './audio/success.mp3');
     }
 
 
@@ -128,43 +173,70 @@
         /* 게임 처음 실행 시 수행되는 함수 */
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        /* 음악설정 */
+        a_123 = game.add.audio('123');
+        a_button8 = game.add.audio('button8');
+        a_fail = game.add.audio('fail');
+        a_game_bgm = game.add.audio('game_bgm');
+        a_go = game.add.audio('go');
+        a_object = game.add.audio('object');
+        a_start = game.add.audio('start');
+        a_success = game.add.audio('success');
         /* 배경화면 설정 */
         bg = game.add.sprite(0, 0, "background");
         //비율 설정
         bg.scale.setTo(0.5, 0.5);
+        setTimeout(function() {
+          logo_1 = game.add.sprite(0, game.height / 6, "logo_1");
+          logo_1.scale.setTo(0.6, 0.6);
+        }, 1000);
 
-        logo_1 = game.add.sprite(0, game.height / 6, "logo_1");
-        logo_1.scale.setTo(0.6, 0.6);
+        setTimeout(function() {
+          logo_2 = game.add.sprite(
+              0, logo_1.y + (logo_1.height / 2), "logo_2");
+          logo_2.scale.setTo(0.7, 0.7);
+        }, 1000+600+10);
 
-        logo_2 = game.add.sprite(
-            0, logo_1.y + (logo_1.height / 2), "logo_2");
-        logo_2.scale.setTo(0.7, 0.7);
+        setTimeout(function() {
+          firstBtn = game.add.button(
+              (game.world.centerX - (game.cache.getImage("firstBtn").width) * 7 / 10 / 2), game.height * 0.9, "firstBtn", firstBtnClick, this, 1, 1, 0
+          );
+          firstBtn.scale.setTo(0.7, 0.7);
+        }, 1000+600+600+10);
 
 
-        // character = game.add.sprite(
-        //   (game.width) / 2
-        //   , (game.height) * 0.7
-        //   , "player");
-        // character.scale.setTo(0.5, 0.5);
-        // character.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-        // character.animations.play("run");
+        a_start.play();
 
-        firstBtn = game.add.button(
-            (game.world.centerX - (game.cache.getImage("firstBtn").width) * 7 / 10 / 2), game.height * 0.8, "firstBtn", firstBtnClick, this, 1, 1, 0
-        );
-        firstBtn.scale.setTo(0.7, 0.7);
+        character = game.add.sprite(
+          game.world.centerX-(256/4)
+          , (game.height) * 0.7
+          , "player");
+        character.scale.setTo(0.5, 0.5);
+        character.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
+        character.animations.play("run");
 
+
+        tofu = game.add.sprite(
+          game.world.centerX-(game.cache.getImage("g_obj_01").width/2)
+          , game.world.centerY-(game.cache.getImage("g_obj_01").height-50)
+          , "g_obj_01");
+        tofu.angle+=10;
+        //tofu.scale.setTo(0.5, 0.5);
 
 
         /* 음소거 버튼 설정 */
         muteBtn_on = game.add.button(
-            game.width - (game.cache.getImage("muteBtn_on").width / 2) - 10, game.height - (game.cache.getImage("muteBtn_on").height / 2) - 10, "muteBtn_on", muteBtn_onClick, this, 1, 1, 0
+            game.width - (game.cache.getImage("muteBtn_on").width / 2) - 10
+            , 10
+            , "muteBtn_on", muteBtn_onClick, this, 1, 1, 0
         );
         muteBtn_on.scale.setTo(0.5, 0.5);
         muteBtn_on.visible = false;
 
         muteBtn_off = game.add.button(
-            game.width - (game.cache.getImage("muteBtn_off").width / 2) - 10, game.height - (game.cache.getImage("muteBtn_off").height / 2) - 10, "muteBtn_off", muteBtn_offClick, this, 1, 1, 0
+            game.width - (game.cache.getImage("muteBtn_off").width / 2) - 10
+            , 10
+            , "muteBtn_off", muteBtn_offClick, this, 1, 1, 0
         );
         muteBtn_off.scale.setTo(0.5, 0.5);
 
@@ -173,8 +245,8 @@
         timer = game.time.create();
 
         // create a delayed event 1m and 30s from now
-        timerEvent = timer.add(Phaser.Timer.MINUTE * 2, this.endTimer, this);
-        // timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
+        // timerEvent = timer.add(Phaser.Timer.MINUTE * 2, endTimer, this);
+        timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
 
 
         /* box 그룹 생성 */
@@ -189,10 +261,8 @@
 
 
         /* Score */
-        txtScore = game.add.text(20, 10, "Score: 0", {
-            fontSize: "70px Arial",
-            fill: "#FFFFFF"
-        });
+        txtScore= game.add.text(10, 10, 'Score: 0', { font: '16pt Arial', fill: '#ffffff' });
+        txtScore.position.x = game.world.centerX-(txtScore.width/2)
         txtScore.visible = false;
     }
 
@@ -201,9 +271,12 @@
     /* -----UPDATE----- */
     function update() {
         /*  프레임워크에서 주기적으로 수행하는 함수 */
-        // if (life < 1) {
-        //   return;
-        // }
+        if (life < 1) {
+          player.visible=false;
+          enemy.visible=false;
+          txtScore.visible=false;
+          return;
+        }
         /* box 밖으로의 움직임 제한 */
         game.physics.arcade.collide(player, box);
 
@@ -217,7 +290,11 @@
             //game.physics.arcade.moveToPointer(player, 400);
             game.physics.arcade.moveToXY(player, game.input.x, game.height, 1000);
             if (isHit) {
+              if(good) {
                 player.animations.play("good");
+              } else {
+                player.animations.play("bad");
+              }
             } else if (game.input.mousePointer.x > player.x || game.input.mousePointer.x < player.x) {
                 player.animations.play("run");
             } else {
@@ -253,7 +330,7 @@
     function render() {
         if (timer.running) {
             // If our timer is running, show the time in a nicely formatted way,fontSize:"70px Arial",fill: "#FFFFFF"}
-            game.debug.text(formatTime(Math.round((timerEvent.delay - timer.ms) / 1000)), 80, 14, "#ff0");
+            game.debug.text(formatTime(Math.round((timerEvent.delay - timer.ms) / 1000)), game.width-70, 25, "#ffffff");
         } else {
             // else show 'Done'!;
 
@@ -271,15 +348,22 @@
 
 
     function enemyHitsPlayer(playerPoint, enemy) {
+      a_object.play();
+      //console.log(enemy['score']);
         if (player_y_record == -1) {
             player_y_record = player.y;
         }
         enemy.kill();
         isHit = true;
+        if(enemy['score']>0) {
+          good=true;
+        } else {
+          good=false;
+        }
         //20 만큼 점프
         player.y = player_y_record - 10;
         //life = 0;
-        score++;
+        score+=enemy['score'];
         txtScore.setText("Score: " + score);
         setTimeout(function() {
             isHit = false;
@@ -287,17 +371,26 @@
     }
 
     function firstBtnClick() {
+        a_start.stop();
+        a_button8.play();
+        character.visible=false;
+        tofu.visible=false;
         logo_1.visible = false;
         logo_2.visible = false;
         muteBtn_on.visible = false;
         muteBtn_off.visible = false;
         firstBtn.visible = false;
 
+
         /* 게임 시작 전 화면 설정 */
-        instruction = game.add.sprite(
-            (game.cache.getImage("background").width - game.cache.getImage("instruction").width) / 4, game.height / 16, "instruction"
-        );
-        instruction.scale.setTo(0.5, 0.5);
+        setTimeout(function() {
+          instruction = game.add.sprite(
+              (game.cache.getImage("background").width - game.cache.getImage("instruction").width) / 4, game.height / 16, "instruction"
+          );
+          instruction.scale.setTo(0.5, 0.5);
+        }, 600);
+
+
 
 
         setTimeout(function() {
@@ -305,22 +398,25 @@
                 (game.cache.getImage("background").width - game.cache.getImage("startBtn").width) / 4, game.height * 0.8, "startBtn", startBtnClick, this, 1, 1, 0
             );
             startBtn.scale.setTo(0.5, 0.5);
-        }, 1000);
+        }, 600+1500+10);
 
     }
 
     function muteBtn_onClick() {
+      game.sound.mute = false;
         muteBtn_on.visible = false;
         muteBtn_off.visible = true;
     }
 
     function muteBtn_offClick() {
+      game.sound.mute = true;
         muteBtn_off.visible = false;
         muteBtn_on.visible = true;
     }
 
 
     function startBtnClick() {
+      a_button8.play();
         instruction.visible = false;
         startBtn.visible = false;
 
@@ -329,9 +425,11 @@
     }
 
     function basketBtnClick() {
+      a_button8.play();
         txtScore.visible = false;
-        enemy.visible = false;
-        player.visible = false;
+        // enemy.visible = false;
+        // player.visible = false;
+        txtScore.visible=false;
         game_over.visible = false;
         basketBtn.visible = false;
 
@@ -340,23 +438,97 @@
         );
         basket_board.scale.setTo(0.5, 0.5);
 
-        resultBtn = game.add.button(
-            (game.cache.getImage("background").width - game.cache.getImage("resultBtn").width) / 4, game.height * 0.8, "resultBtn", resultBtnClick, this, 1, 1, 0
+        linkBtn_1 = game.add.button(
+            game.width - (game.cache.getImage("linkBtn").width / 2) - 30
+            , 160
+            , "linkBtn", linkBtn_onClick1, this, 1, 1, 0
         );
-        resultBtn.scale.setTo(0.5, 0.5);
+        linkBtn_1.scale.setTo(0.4,0.4);
+        linkBtn_2 = game.add.button(
+          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
+          , 160+90
+            , "linkBtn", linkBtn_onClick2, this, 1, 1, 0
+        );
+        linkBtn_2.scale.setTo(0.4,0.4);
 
+        linkBtn_3 = game.add.button(
+          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
+          , 160+90+90
+            , "linkBtn", linkBtn_onClick3, this, 1, 1, 0
+        );
+        linkBtn_3.scale.setTo(0.4,0.4);
+
+        linkBtn_4 = game.add.button(
+          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
+          , 160+90+90+90
+            , "linkBtn", linkBtn_onClick4, this, 1, 1, 0
+        );
+        linkBtn_4.scale.setTo(0.4,0.4);
+
+        after5 = game.add.text(
+          (game.cache.getImage("background").width - game.cache.getImage("resultBtn").width) / 4
+          , game.height * 0.8
+          , '5초 뒤 다음페이지로'
+          , { font: '20pt Arial', fill: '#000000' });
+
+        after5.position.x = game.world.centerX - (after5.width/2);
+        after5.position.y += 30;
+
+        setTimeout(function() {
+          after5.visible=false;
+          resultBtn = game.add.button(
+              (game.cache.getImage("background").width - game.cache.getImage("resultBtn").width) / 4, game.height * 0.8, "resultBtn", resultBtnClick, this, 1, 1, 0
+          );
+          resultBtn.scale.setTo(0.5, 0.5);
+        },5000);
+
+
+    }
+    function linkBtn_onClick1() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EB%91%90%EB%B6%80&ord=&sprice=&eprice=&cacode=11060000&pdcode=79240');
+    }
+    function linkBtn_onClick2() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%9A%94%EA%B1%B0%ED%8A%B8&ord=&sprice=&eprice=&cacode=11080000&pdcode=4464');
+    }
+    function linkBtn_onClick3() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%86%8C%EA%B8%88&ord=&sprice=&eprice=&cacode=11090000&pdcode=30125');
+    }
+    function linkBtn_onClick4() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EB%A7%8C%EB%91%90&ord=&sprice=&eprice=&cacode=11060000&pdcode=48200');
     }
 
     function resultBtnClick() {
+      a_button8.play();
+      basket_board.visible=false;
+      resultBtn.visible=false;
+      linkBtn_1.visible=false;
+      linkBtn_2.visible=false;
+      linkBtn_3.visible=false;
+      linkBtn_4.visible=false;
+      final_text_1= game.add.text(game.world.centerX, game.height/4, '최종점수', { font: '18pt Arial', fill: '#ffffff' });
+      final_text_1.position.x = final_text_1.position.x-(final_text_1.width/2);
 
+      final_text_2= game.add.text(game.world.centerX, game.height/4+50, finalScore, { font: '64pt Arial', fill: '#ffffff' });
+      final_text_2.position.x = final_text_2.position.x-(final_text_2.width/2);
+
+
+      restartBtn = game.add.button(
+          (game.cache.getImage("background").width - game.cache.getImage("restartBtn").width) / 4, game.height * 0.8, "restartBtn", restartBtnClick, this, 1, 1, 0
+      );
+      restartBtn.scale.setTo(0.5, 0.5);
+    }
+
+    function restartBtnClick() {
+      a_button8.play();
+      this.game.state.restart();
     }
 
     function count_GO(millisecondsToWait, ratio) {
         img_GO = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_GO").width * 1.2) / 2), (game.world.centerY - (game.cache.getImage("img_GO").height * 1.2 / 2)), "img_GO"
+            (game.world.centerX - (game.cache.getImage("img_GO").width * 1.2) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_GO").height * 1.2 / 2)), "img_GO"
         );
         img_GO.scale.setTo(1.2, 1.2);
-
+        a_go.play();
         // pop_GO = game.add.tween(img_GO.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
         setTimeout(function() {
             // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
@@ -367,7 +539,7 @@
 
     function count_1(millisecondsToWait, ratio) {
         img_1 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_1").width) / 2), (game.world.centerY - (game.cache.getImage("img_1").height / 2)), "img_1"
+            (game.world.centerX - (game.cache.getImage("img_1").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_1").height / 2)), "img_1"
         );
 
         // pop_1 = game.add.tween(img_1.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
@@ -381,7 +553,7 @@
 
     function count_2(millisecondsToWait, ratio) {
         img_2 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_2").width) / 2), (game.world.centerY - (game.cache.getImage("img_2").height / 2)), "img_2"
+            (game.world.centerX - (game.cache.getImage("img_2").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_2").height / 2)), "img_2"
         );
 
         // pop_2 = game.add.tween(img_2.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
@@ -395,7 +567,7 @@
 
     function count_3(millisecondsToWait, ratio) {
         img_3 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_3").width) / 2), (game.world.centerY - (game.cache.getImage("img_3").height / 2)), "img_3"
+            (game.world.centerX - (game.cache.getImage("img_3").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_3").height / 2)), "img_3"
         );
         // img_3.anchor.set(0.5);
         // img_3.smoothed = false;
@@ -416,7 +588,8 @@
     }
 
     function popupCount() {
-        var millisecondsToWait = 700;
+      a_123.play();
+        var millisecondsToWait = 1000;
         //var ratio=2;
 
         //count_3(millisecondsToWait,ratio);
@@ -424,6 +597,7 @@
     }
 
     function gameStart() {
+      a_game_bgm.play();
         for (var i = 0; i < game.width / 10; i++) {
             var rowBox = box.create(i * 10, 80, "box");
             rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
@@ -468,7 +642,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_01");
             item.visible = false;
-            item.setAttribute('score', 1);
+            item['score']=1;
             preEasyArr.push(item);
         }
         //초록만두
@@ -477,7 +651,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_03");
             item.visible = false;
-            item.setAttribute('score', 1);
+            item['score']=1;
             preEasyArr.push(item);
         }
         //초록소금
@@ -486,7 +660,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_05");
             item.visible = false;
-            item.setAttribute('score', 1);
+            item['score']=1;
             preEasyArr.push(item);
         }
         //초록 액티비아
@@ -495,7 +669,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_07");
             item.visible = false;
-            item.setAttribute('score', 1);
+            item['score']=1;
             preEasyArr.push(item);
         }
         //지담터
@@ -504,7 +678,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "jadamteo");
             item.visible = false;
-            item.setAttribute('score', 2);
+            item['score']=2;
             preEasyArr.push(item);
         }
 
@@ -518,7 +692,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_02");
             item.visible = false;
-            item.setAttribute('score', -1);
+            item['score']=-2;
             preEasyArr.push(item);
         }
         //검정만두
@@ -527,7 +701,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_04");
             item.visible = false;
-            item.setAttribute('score', -1);
+            item['score']=-1;
 
             preEasyArr.push(item);
         }
@@ -537,7 +711,7 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_06");
             item.visible = false;
-            item.setAttribute('score', -1);
+            item['score']=-1;
 
             preEasyArr.push(item);
         }
@@ -547,41 +721,147 @@
             var x = game.rnd.integerInRange(10, game.width - (cache + 10));
             var item = enemy.create(x, 80, "g_obj_08");
             item.visible = false;
-            item.setAttribute('score', -1);
+            item['score']=-1;
 
             preEasyArr.push(item);
         }
 
         /*
+          >>>>> HARD MODE GOOD ITEMS <<<<<<
+        */
+
+        //초록두부
+        for (var i = 0; i < 25; i++) {
+            var cache = game.cache.getImage("g_obj_01").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_01");
+            item.visible = false;
+            item['score']=1;
+            preHardArr.push(item);
+        }
+        //초록만두
+        for (var i = 0; i < 25; i++) {
+            var cache = game.cache.getImage("g_obj_03").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_03");
+            item.visible = false;
+            item['score']=1;
+            preHardArr.push(item);
+        }
+        //초록소금
+        for (var i = 0; i < 25; i++) {
+            var cache = game.cache.getImage("g_obj_05").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_05");
+            item.visible = false;
+            item['score']=1;
+            preHardArr.push(item);
+        }
+        //초록 액티비아
+        for (var i = 0; i < 25; i++) {
+            var cache = game.cache.getImage("g_obj_07").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_07");
+            item.visible = false;
+            item['score']=1;
+            preHardArr.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 10; i++) {
+            var cache = game.cache.getImage("jadamteo").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item['score']=2;
+            preHardArr.push(item);
+        }
+
+        /*
+          >>>>> HARD MODE BAD ITEMS <<<<<<
+        */
+
+        //검정두부
+        for (var i = 0; i < 6; i++) {
+            var cache = game.cache.getImage("g_obj_02").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_02");
+            item.visible = false;
+            item['score']=-1;
+            preHardArr.push(item);
+        }
+        //검정만두
+        for (var i = 0; i < 6; i++) {
+            var cache = game.cache.getImage("g_obj_04").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_04");
+            item.visible = false;
+            item['score']=-1;
+
+            preHardArr.push(item);
+        }
+        //검정소금
+        for (var i = 0; i < 6; i++) {
+            var cache = game.cache.getImage("g_obj_06").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_06");
+            item.visible = false;
+            item['score']=-1;
+
+            preHardArr.push(item);
+        }
+        //검정 액티비아
+        for (var i = 0; i < 6; i++) {
+            var cache = game.cache.getImage("g_obj_08").width;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "g_obj_08");
+            item.visible = false;
+            item['score']=-1;
+
+            preHardArr.push(item);
+        }
+
+
+        /*
           SHUFFLE ITEM ARRAY
         */
         easyArr = shuffleArray(preEasyArr);
+        hardArr = shuffleArray(preHardArr);
 
         var i = 0;
         /* 아이템 낙하 */
-        var easyMode = setInterval(
-            function() {
-                var item = easyArr[i];
-                item.visible = true;
-                game.physics.arcade.moveToXY(item, item.x, game.height, 150);
-                i++;
-                if (i > easyArr.length) {
-                    clearInterval(easyMode);
-                }
-            }, 500
-        );
-
-        // for (var i = 0; i < preEasyArr.length; i++) {
-        //   var item = preEasyArr[i];
-        //   setTimeout(
+        // easyMode = setInterval(
         //     function() {
-        //       item.visible=true;
-        //       game.physics.arcade.moveToXY(item, item.x, game.height, 150);
-        //     }, 100);
+        //       if (i == easyArr.length) {
+        //         hard=true;
+        //         i=0;
+        //         destroy(easyMode);
+        //       } else {
+        //         var item = easyArr[i];
+        //         item.visible = true;
+        //         game.physics.arcade.moveToXY(item, item.x, game.height, 150);
+        //         i++;
+        //       }
+        //     }, 1290
+        // );
         //
-        // }
+        // hardMode = setInterval(
+        //     function() {
+        //       if(hard) {
+        //         if (i == hardArr.length) {
+        //           hard=true;
+        //           i=0;
+        //           destroy(hardMode);
+        //         } else {
+        //           var item = hardArr[i];
+        //           item.visible = true;
+        //           game.physics.arcade.moveToXY(item, item.x, game.height, 300);
+        //           i++;
+        //         }
+        //       }
+        //
+        //     }, 597
+        // );
 
-        // enemy 변수가 게임 레이어 밖으로 벗어나면 해당 객체를 삭제
         enemy.setAll("outOfBoundsKill", true);
         enemy.setAll("checkWorldBounds", true);
 
@@ -612,6 +892,10 @@
      */
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function destroy(i) {
+      clearInterval(i);
     }
 </script>
 
