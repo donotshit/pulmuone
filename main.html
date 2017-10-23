@@ -13,7 +13,7 @@
 </body>
 <script type="text/javascript" src="./js/phaser.min.js"></script>
 <script type="text/javascript">
-    var game = new Phaser.Game(360, 640, Phaser.CANVAS, null, {
+    var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS,  'game', {
         preload: preload,
         create: create,
         update: update,
@@ -72,6 +72,7 @@
     var linkBtn_4;
     var tofu;
     var after5;
+    var scaleRatio;
 
     var endTimer = /* -----ENDTIMER----- */
         function endTimer() {
@@ -173,6 +174,8 @@
         /* 게임 처음 실행 시 수행되는 함수 */
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        scaleRatio = window.devicePixelRatio;
+
         /* 음악설정 */
         a_123 = game.add.audio('123');
         a_button8 = game.add.audio('button8');
@@ -185,7 +188,7 @@
         /* 배경화면 설정 */
         bg = game.add.sprite(0, 0, "background");
         //비율 설정
-        bg.scale.setTo(0.5, 0.5);
+        bg.scale.setTo(scaleRatio,scaleRatio);
         setTimeout(function() {
           logo_1 = game.add.sprite(0, game.height / 6, "logo_1");
           logo_1.scale.setTo(0.6, 0.6);
@@ -208,10 +211,10 @@
         a_start.play();
 
         character = game.add.sprite(
-          game.world.centerX-(256/4)
+          game.world.centerX-(256/2)
           , (game.height) * 0.7
           , "player");
-        character.scale.setTo(0.5, 0.5);
+        character.scale.setTo(scaleRatio, scaleRatio);
         character.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
         character.animations.play("run");
 
