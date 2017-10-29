@@ -113,15 +113,21 @@ if(isMobile) {
             finalScore = score;
             life = 0;
             if(finalScore >= 100){
+            // if(true){
               a_success.play();
-              game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
+              // game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
+              game_over = game.add.sprite(game.world.centerX,game.world.height/5,'clear');
+              game_over.scale.setTo(scaleRatio,scaleRatio);
+              game_over.position.x -= game_over.width/2;
+              game_over.position.y -= game_over.height/2;
+              game_over.animations.add('start',[0,1,2,3,4,5],30,false);
+              game_over.animations.play('start');
 
             } else {
               a_fail.play();
               game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("fail").width / 4), game.height / 3, "fail");
 
             }
-            game_over.scale.setTo(0.5, 0.5);
 
             setTimeout(
                 function() {
@@ -152,13 +158,11 @@ if(isMobile) {
         game.load.image("box", "./images/box.png");
         /* 플레이어를 기본 32x40 크기로 설정. 'player' 이름으로 생성 */
         game.load.spritesheet("player", "./images/player.png", 256, 256);
-        /* 회피물 로드 */
-        game.load.image("enemy", "./images/enemy.png");
         /* 카운트다운 이미지 로드 */
-        game.load.image("img_1", "./images/count/1.png");
-        game.load.image("img_2", "./images/count/2.png");
-        game.load.image("img_3", "./images/count/3.png");
-        game.load.image("img_GO", "./images/count/GO!.png");
+        game.load.spritesheet("img_1", "./images/count/img_1.png",228,228);
+        game.load.spritesheet("img_2", "./images/count/img_2.png",228,228);
+        game.load.spritesheet("img_3", "./images/count/img_3.png",228,228);
+        game.load.spritesheet("img_GO", "./images/count/img_GO.png",228,228);
         /* 아이템 로드 */
         game.load.image("g_obj_01", "./images/items/g_obj_01.png");
         game.load.image("g_obj_02", "./images/items/g_obj_02.png");
@@ -171,8 +175,8 @@ if(isMobile) {
         game.load.image("jadamteo", "./images/items/jadamteo.png");
 
         /* 게임오버 이미지 로드 */
-        game.load.image("clear", "./images/clear.png");
-        game.load.image("fail", "./images/fail.png");
+        game.load.spritesheet("clear", "./images/clear.png",560,390);
+        game.load.spritesheet("fail", "./images/fail.png",317,194);
 
         /* 바구니 확인 버튼 로드 */
         game.load.image("basketBtn", "./images/basketBtn.png");
@@ -432,6 +436,7 @@ if(isMobile) {
         logo.destroy();
         title_sprite.destroy();
         firstBtn.destroy();
+        firstBg.destroy();
         muteBtn_on.destroy();
         muteBtn_off.destroy();
 
@@ -578,71 +583,59 @@ if(isMobile) {
     }
 
     function count_GO(millisecondsToWait, ratio) {
-        img_GO = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_GO").width * 1.2) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_GO").height * 1.2 / 2)), "img_GO"
-        );
-        img_GO.scale.setTo(1.2, 1.2);
-        a_go.play();
-        // pop_GO = game.add.tween(img_GO.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+      a_go.play();
+      img_GO = game.add.sprite(game.world.centerX,game.world.height/5,'img_GO');
+      img_GO.scale.setTo(scaleRatio,scaleRatio);
+      img_GO.position.x -= img_GO.width/2;
+      img_GO.animations.add('start',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],30,false);
+      img_GO.animations.play('start');
         setTimeout(function() {
             // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-            img_GO.visible = false;
+            img_GO.destroy();
             gameStart();
         }, millisecondsToWait);
     }
 
     function count_1(millisecondsToWait, ratio) {
-        img_1 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_1").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_1").height / 2)), "img_1"
-        );
-
-        // pop_1 = game.add.tween(img_1.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+      a_123.play();
+        img_1 = game.add.sprite(game.world.centerX,game.world.height/5,'img_1');
+        img_1.scale.setTo(scaleRatio,scaleRatio);
+        img_1.position.x -= img_1.width/2;
+        img_1.animations.add('start',[0,1,2,3,4,5,6,7,8,9],30,false);
+        img_1.animations.play('start');
         setTimeout(function() {
-            // pop_1 = game.add.tween(img_1.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
-            // count_GO(millisecondsToWait,ratio);
-            img_1.visible = false;
-            count_GO(millisecondsToWait);
+          img_1.destroy();
+          count_GO(millisecondsToWait);
         }, millisecondsToWait);
     }
 
     function count_2(millisecondsToWait, ratio) {
-        img_2 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_2").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_2").height / 2)), "img_2"
-        );
-
-        // pop_2 = game.add.tween(img_2.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
+      a_123.play();
+        img_2 = game.add.sprite(game.world.centerX,game.world.height/5,'img_2');
+        img_2.scale.setTo(scaleRatio,scaleRatio);
+        img_2.position.x -= img_2.width/2;
+        img_2.animations.add('start',[0,1,2,3,4,5,6,7,8,9],30,false);
+        img_2.animations.play('start');
         setTimeout(function() {
-            // pop_2 = game.add.tween(img_2.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
-            // count_1(millisecondsToWait,ratio);
-            img_2.visible = false;
-            count_1(millisecondsToWait);
+          img_2.destroy();
+          count_1(millisecondsToWait);
         }, millisecondsToWait);
     }
 
     function count_3(millisecondsToWait, ratio) {
-        img_3 = game.add.sprite(
-            (game.world.centerX - (game.cache.getImage("img_3").width) / 2), ((game.world.centerY/3)+20 - (game.cache.getImage("img_3").height / 2)), "img_3"
-        );
-        // img_3.anchor.set(0.5);
-        // img_3.smoothed = false;
-        //
-        // game.physics.enable(img_3, Phaser.Physics.ARCADE);
-        // img_3.body.immovable = true;
-
-
-
-        // pop_3 = game.add.tween(img_3.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Elastic.In, true);
-        // game.add.tween(img_3.scale).to( { x: ratio, y: ratio }, 300, Phaser.Easing.Linear.None, true);
+        a_123.play();
+        img_3 = game.add.sprite(game.world.centerX,game.world.height/5,'img_3');
+        img_3.scale.setTo(scaleRatio,scaleRatio);
+        img_3.position.x -= img_3.width/2;
+        img_3.animations.add('start',[0,1,2,3,4,5,6,7,8,9],30,false);
+        img_3.animations.play('start');
         setTimeout(function() {
-            // pop_3 = game.add.tween(img_3.scale).to( { x: 0, y: 0 }, 1, Phaser.Easing.Elastic.In, true);
-            // count_2(millisecondsToWait,ratio);
-            img_3.visible = false;
+            img_3.destroy();
             count_2(millisecondsToWait);
         }, millisecondsToWait);
     }
 
     function popupCount() {
-      a_123.play();
         var millisecondsToWait = 1000;
         //var ratio=2;
 
@@ -892,6 +885,7 @@ if(isMobile) {
               } else {
                 var item = easyArr[i];
                 item.visible = true;
+                for()
                 game.physics.arcade.moveToXY(item, item.x, game.height, 150);
                 i++;
               }
