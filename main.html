@@ -18,6 +18,7 @@ var isMobile = (/iphone|ipod|android|ie|blackberry|fennec/).test(navigator.userA
 if(isMobile) {
   gameWidth = window.innerWidth;
   gameHeight = window.innerHeight;
+  //alert(gameHeight);
 }
     var game = new Phaser.Game(gameWidth, gameHeight, Phaser.CANVAS,  'game', {
         preload: preload,
@@ -56,7 +57,10 @@ if(isMobile) {
     var firstBtn; // touch to start image
     var muteBtn_on; // 음소거 버튼(활성화)
     var muteBtn_off; // 음소거 버튼(비활성화)
-    var instruction; //게임 시작 전 화면 배경
+    var inst_bg; //게임 시작 전 화면 배경
+    var inst_1; //게임 시작 전 화면 배경
+    var inst_2; //게임 시작 전 화면 배경
+    var inst_3; //게임 시작 전 화면 배경
     var startBtn; //시작버튼
     var bg; // 게임 배경 이미지
     var box; // 그룹 형성용 이미지
@@ -76,9 +80,22 @@ if(isMobile) {
     var img_GO; //GO!
     var isHit = false; //충돌 유무 확인
     var player_y_record = -1; //최초 플레이어 y지점 기록
-    var game_over; //게임오버 이미지
+    var clear; //성공 애니메이션
+    var clear_1; //성공 캐릭터 1
+    var clear_2; //성공 캐릭터 2
+    var clear_bg; //성공 빵빠레
+    var fail; // 실패 애니메이션
+    var fail_1; // 실패 캐릭터 1
+    var fail_bg; // 실패 배경
     var basketBtn; // 장바구니 확인 버튼
     var basket_board; // 장바구니 배경 이미지
+    var basket_1; // 장바구니 아이템 1
+    var basket_2; // 장바구니 아이템 2
+    var basket_3; // 장바구니 아이템 3
+    var basket_4; // 장바구니 아이템 4
+    var basket_5; // 장바구니 아이템 5
+    var basket_6; // 장바구니 아이템 6
+    var basket_7; // 장바구니 아이템 7
     var resultBtn; // 결과창 이동 버튼
     var hard = false;
     var easyMode;
@@ -99,58 +116,25 @@ if(isMobile) {
     var linkBtn_1;
     var linkBtn_2;
     var linkBtn_3;
-    var linkBtn_4;
-    var after5;
     var scaleRatio;
     var firstBtnBlink;
     var group_muteBtn;// mute on/off button always one top;
-
-    var endTimer = /* -----ENDTIMER----- */
-        function endTimer() {
-            // Stop the timer when the delayed event triggers
-            timer.stop();
-            a_game_bgm.stop();
-            finalScore = score;
-            life = 0;
-            if(finalScore >= 100){
-            // if(true){
-              a_success.play();
-              // game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("clear").width / 4), game.height / 3, "clear");
-              game_over = game.add.sprite(game.world.centerX,game.world.height/5,'clear');
-              game_over.scale.setTo(scaleRatio,scaleRatio);
-              game_over.position.x -= game_over.width/2;
-              game_over.position.y -= game_over.height/2;
-              game_over.animations.add('start',[0,1,2,3,4,5],30,false);
-              game_over.animations.play('start');
-
-            } else {
-              a_fail.play();
-              game_over = game.add.sprite(game.world.centerX - (game.cache.getImage("fail").width / 4), game.height / 3, "fail");
-
-            }
-
-            setTimeout(
-                function() {
-                    basketBtn = game.add.button(
-                        (game.cache.getImage("background").width - game.cache.getImage("basketBtn").width) / 4, game.height * 0.8, "basketBtn", basketBtnClick, this, 1, 1, 0
-                    );
-                    basketBtn.scale.setTo(0.5, 0.5);
-                }, 1000)
-        };
-
+    var page = 1; // 장바구니 페이지 변수
 
     /* -----PRELOAD----- */
     function preload() {
         //게임에 필요한 데이터 로드
         /* 게임 시작전 화면 이미지 로드 */
-        game.load.image("start", "./images/start.png");
         game.load.spritesheet("logo", "./images/logo.png", 553, 269);
         game.load.spritesheet("title_sprite", "./images/title_sprite.png", 720, 650);
         game.load.image("firstBg", "./images/firstBg.png");
         game.load.image("firstBtn", "./images/firstBtn.png");
         game.load.image("muteBtn_on", "./images/muteBtn_on.png");
         game.load.image("muteBtn_off", "./images/muteBtn_off.png");
-        game.load.image("instruction", "./images/instruction.png");
+        game.load.image("inst_bg", "./images/inst_bg.png");
+        game.load.image("inst_1", "./images/inst_1.png");
+        game.load.image("inst_2", "./images/inst_2.png");
+        game.load.image("inst_3", "./images/inst_3.png");
         game.load.image("startBtn", "./images/startBtn.png");
         /* 배경 이미지 로드 */
         game.load.image("background", "./images/background.png");
@@ -176,17 +160,30 @@ if(isMobile) {
 
         /* 게임오버 이미지 로드 */
         game.load.spritesheet("clear", "./images/clear.png",560,390);
+        game.load.image("clear_1", "./images/clear_1.png");
+        game.load.image("clear_2", "./images/clear_2.png");
+        game.load.image("clear_bg", "./images/clear_bg.png");
         game.load.spritesheet("fail", "./images/fail.png",317,194);
+        game.load.image("fail_1", "./images/fail_1.png");
+        game.load.image("fail_bg", "./images/fail_bg.png");
 
         /* 바구니 확인 버튼 로드 */
         game.load.image("basketBtn", "./images/basketBtn.png");
         /* 바구니 확인 board 로드 */
         game.load.image("basket_board", "./images/basket_board.png");
+        /* 장바구니 아이템 로드 */
+        game.load.image("basket_1", "./images/basket/basket_1.png");
+        game.load.image("basket_2", "./images/basket/basket_2.png");
+        game.load.image("basket_3", "./images/basket/basket_3.png");
+        game.load.image("basket_4", "./images/basket/basket_4.png");
+        game.load.image("basket_5", "./images/basket/basket_5.png");
+        game.load.image("basket_6", "./images/basket/basket_6.png");
+        game.load.image("basket_7", "./images/basket/basket_7.png");
         /* 제품보러가기 버튼 로드 */
         game.load.image("linkBtn", "./images/linkBtn.png");
 
         /* 결과창 이동 버튼 로드 */
-        game.load.image("resultBtn", "./images/resultBtn.png");
+        game.load.spritesheet("resultBtn", "./images/resultBtn.png",336,127);
         /* 재시작 버튼 추가 */
         game.load.image("restartBtn", "./images/restartBtn.png");
 
@@ -210,7 +207,7 @@ if(isMobile) {
         /* 게임 처음 실행 시 수행되는 함수 */
         game.physics.startSystem(Phaser.Physics.ARCADE);
         if(isMobile) {
-          scaleRatio = gameHeight/gameWidth;
+          scaleRatio = (gameWidth/gameHeight)*window.devicePixelRatio;
         } else {
           scaleRatio = 0.5;
         }
@@ -281,19 +278,21 @@ if(isMobile) {
 
         /* 음소거 버튼 설정 */
         muteBtn_on = game.add.button(
-            game.width - (game.cache.getImage("muteBtn_on").width / 2) - 10
+            game.width
             , 10
             , "muteBtn_on", muteBtn_onClick, this, 1, 1, 0
         );
-        muteBtn_on.scale.setTo(0.5, 0.5);
+        muteBtn_on.scale.setTo(scaleRatio, scaleRatio);
+        muteBtn_on.x -= (muteBtn_on.width)+10
         muteBtn_on.visible = false;
 
         muteBtn_off = game.add.button(
-            game.width - (game.cache.getImage("muteBtn_off").width / 2) - 10
+            game.width
             , 10
             , "muteBtn_off", muteBtn_offClick, this, 1, 1, 0
         );
-        muteBtn_off.scale.setTo(0.5, 0.5);
+        muteBtn_off.scale.setTo(scaleRatio, scaleRatio);
+        muteBtn_off.x -= (muteBtn_off.width)+10
 
         group_muteBtn = game.add.group();
         group_muteBtn.add(muteBtn_on);
@@ -304,8 +303,8 @@ if(isMobile) {
         timer = game.time.create();
 
         // create a delayed event 1m and 30s from now
-        timerEvent = timer.add(Phaser.Timer.MINUTE * 2, endTimer, this);
-        // timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
+        // timerEvent = timer.add(Phaser.Timer.MINUTE * 2, endTimer, this);
+        timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
 
 
         /* box 그룹 생성 */
@@ -383,7 +382,63 @@ if(isMobile) {
             }
         }
     }
+    function endTimer() {
+        // Stop the timer when the delayed event triggers
+        timer.stop();
+        a_game_bgm.stop();
+        finalScore = score;
+        life = 0;
+        if(finalScore >= 100){
+        // if(false){
+          a_success.play();
+          clear_bg = game.add.sprite(0, 0,'clear_bg');
+          clear_bg.width = gameWidth;
+          clear_bg.height = gameHeight;
+          clear = game.add.sprite(game.world.centerX,game.world.height/5,'clear');
+          clear.scale.setTo(scaleRatio,scaleRatio);
+          clear.position.x -= clear.width/2;
+          clear.position.y -= clear.height/2;
+          clear.animations.add('start',[0,1,2,3,4,5],20,false);
+          clear.animations.play('start');
+          clear_1 = game.add.sprite(game.world.centerX, game.world.centerY,'clear_1');
+          clear_1.scale.setTo(scaleRatio,scaleRatio);
+          clear_1.position.x -= clear_1.width/2;
+          clear_1.position.y -= clear_1.height/2;
+          setTimeout(
+            function() {
+              clear_1.destroy();
+              clear_2 = game.add.sprite(game.world.centerX, game.world.centerY,'clear_2');
+              clear_2.scale.setTo(scaleRatio,scaleRatio);
+              clear_2.position.x -= clear_2.width/2;
+              clear_2.position.y -= clear_2.height/2;
+            }, 1000
+          );
+        } else {
+          a_fail.play();
+          fail_bg = game.add.sprite(0, 0,'fail_bg');
+          fail_bg.width = gameWidth;
+          fail_bg.height = gameHeight;
+          fail =  game.add.sprite(game.world.centerX,game.world.height/5,'fail');
+          fail.scale.setTo(scaleRatio,scaleRatio);
+          fail.position.x -= fail.width/2;
+          fail.position.y -= fail.height/2;
+          fail.animations.add('start',[0,1,2,3,4,5,6,7,8,9,10],20,false);
+          fail.animations.play('start');
+          fail_1 = game.add.sprite(game.world.centerX, game.world.centerY,'fail_1');
+          fail_1.scale.setTo(scaleRatio*1.5,scaleRatio*1.5);
+          fail_1.position.x -= fail_1.width/2;
+          fail_1.position.y -= fail_1.height/2;
+        }
 
+        setTimeout(
+            function() {
+                basketBtn = game.add.button(
+                    game.world.centerX , game.height * 0.8, "basketBtn", basketBtnClick, this, 1, 1, 0
+                );
+                basketBtn.scale.setTo(scaleRatio, scaleRatio);
+                basketBtn.position.x -= basketBtn.width/2;
+            }, 1500);
+    };
 
     /* -----RENDER----- */
     function render() {
@@ -440,24 +495,51 @@ if(isMobile) {
         muteBtn_on.destroy();
         muteBtn_off.destroy();
 
+        /* 게임 시작 전 화면 설정 */
+        setTimeout(function() {
+          inst_bg = game.add.sprite(game.world.centerX,gameHeight/16,'inst_bg');
+          inst_bg.scale.setTo(scaleRatio, scaleRatio);
+          inst_bg.x -= inst_bg.width/2;
+        }, 1000);
 
         /* 게임 시작 전 화면 설정 */
         setTimeout(function() {
-          instruction = game.add.sprite(
-              (game.cache.getImage("background").width - game.cache.getImage("instruction").width) / 4, game.height / 16, "instruction"
-          );
-          instruction.scale.setTo(0.5, 0.5);
-        }, 600);
+          a_button8.play();
+          inst_1 = game.add.sprite(game.world.centerX,game.height/16,'inst_1');
+          inst_1.scale.setTo(scaleRatio, scaleRatio);
+          inst_1.x -= inst_1.width/2;
+          inst_1.y = inst_bg.y+(inst_bg.height/3.5);
+        }, 1000*2);
+
+        /* 게임 시작 전 화면 설정 */
+        setTimeout(function() {
+          a_button8.play();
+          inst_2 = game.add.sprite(game.world.centerX,game.height/16,'inst_2');
+          inst_2.scale.setTo(scaleRatio, scaleRatio);
+          inst_2.x -= inst_2.width/2;
+          inst_2.y = inst_1.y+inst_1.height+(inst_1.height/10);
+        }, 1000*3);
+
+        /* 게임 시작 전 화면 설정 */
+        setTimeout(function() {
+          a_button8.play();
+          inst_3 = game.add.sprite(game.world.centerX,game.height/16,'inst_3');
+          inst_3.scale.setTo(scaleRatio, scaleRatio);
+          inst_3.x -= inst_3.width/2;
+          inst_3.y = inst_2.y+inst_2.height+(inst_2.height/10);
+        }, 1000*4);
 
 
 
 
         setTimeout(function() {
+            a_button8.play();
             startBtn = game.add.button(
-                (game.cache.getImage("background").width - game.cache.getImage("startBtn").width) / 4, game.height * 0.8, "startBtn", startBtnClick, this, 1, 1, 0
+                game.world.centerX, game.height * 0.8, "startBtn", startBtnClick, this, 1, 1, 0
             );
-            startBtn.scale.setTo(0.5, 0.5);
-        }, 600+1500+10);
+            startBtn.scale.setTo(scaleRatio, scaleRatio);
+            startBtn.x -= startBtn.width/2;
+        }, 1000*5);
 
     }
 
@@ -476,84 +558,175 @@ if(isMobile) {
 
     function startBtnClick() {
       a_button8.play();
-        instruction.visible = false;
-        startBtn.visible = false;
+      inst_bg.destroy();
+      inst_1.destroy();
+      inst_2.destroy();
+      inst_3.destroy();
+      startBtn.destroy();
 
         /* start countdown animation */
         popupCount();
     }
 
     function basketBtnClick() {
-      a_button8.play();
-        txtScore.visible = false;
-        // enemy.visible = false;
-        // player.visible = false;
-        txtScore.visible=false;
-        game_over.visible = false;
-        basketBtn.visible = false;
+        a_button8.play();
+        txtScore.destroy();
+        if(finalScore >= 100){
+          clear.destroy();
+          clear_1.destroy();
+          clear_2.destroy();
+          clear_bg.destroy();
+        } else {
+          fail.destroy();
+          fail_1.destroy();
+          fail_bg.destroy();
+        }
+        basketBtn.destroy();
 
-        basket_board = game.add.sprite(
-            (game.cache.getImage("background").width - game.cache.getImage("basket_board").width) / 4, game.height / 16, "basket_board"
-        );
-        basket_board.scale.setTo(0.5, 0.5);
+        basket_board = game.add.sprite(game.world.centerX,gameHeight/16,'basket_board');
+        basket_board.scale.setTo(scaleRatio, scaleRatio);
+        basket_board.x -= basket_board.width/2;
+
+          basket_1 = game.add.sprite(game.world.centerX,game.height/16,'basket_1');
+          basket_1.scale.setTo(scaleRatio, scaleRatio);
+          basket_1.x -= basket_1.width/2;
+          basket_1.y = basket_board.y+basket_1.height*0.65;
+
+          basket_2 = game.add.sprite(game.world.centerX,game.height/16,'basket_2');
+          basket_2.scale.setTo(scaleRatio, scaleRatio);
+          basket_2.x -= basket_2.width/2;
+          basket_2.y = basket_1.y+basket_1.height+(basket_1.height/11);
+
+          basket_3 = game.add.sprite(game.world.centerX,game.height/16,'basket_3');
+          basket_3.scale.setTo(scaleRatio, scaleRatio);
+          basket_3.x -= basket_3.width/2;
+          basket_3.y = basket_2.y+basket_2.height+(basket_2.height/11);
+
+          basket_4 = game.add.sprite(game.world.centerX,game.height/16,'basket_4');
+          basket_4.scale.setTo(scaleRatio, scaleRatio);
+          basket_4.x -= basket_4.width/2;
+          basket_4.y = basket_3.y+basket_3.height+(basket_3.height/11);
+
+          basket_5 = game.add.sprite(game.world.centerX,game.height/16,'basket_5');
+          basket_5.scale.setTo(scaleRatio, scaleRatio);
+          basket_5.x -= basket_1.width/2;
+          basket_5.y = basket_board.y+basket_1.height*0.65;
+          basket_5.visible = false;
+
+          basket_6 = game.add.sprite(game.world.centerX,game.height/16,'basket_6');
+          basket_6.scale.setTo(scaleRatio, scaleRatio);
+          basket_6.x -= basket_6.width/2;
+          basket_6.y = basket_5.y+basket_5.height+(basket_5.height/11);
+          basket_6.visible = false;
+
+          basket_7 = game.add.sprite(game.world.centerX,game.height/16,'basket_7');
+          basket_7.scale.setTo(scaleRatio, scaleRatio);
+          basket_7.x -= basket_7.width/2;
+          basket_7.y = basket_6.y+basket_6.height+(basket_6.height/11);
+          basket_7.visible = false;
 
         linkBtn_1 = game.add.button(
-            game.width - (game.cache.getImage("linkBtn").width / 2) - 30
-            , 160
-            , "linkBtn", linkBtn_onClick1, this, 1, 1, 0
+            0,0, "linkBtn", linkBtn_onClick1, this, 1, 1, 0
         );
-        linkBtn_1.scale.setTo(0.4,0.4);
+        linkBtn_1.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_1.x = basket_1.x+basket_1.width-(linkBtn_1.width*1.1);
+        linkBtn_1.y = basket_1.y+basket_1.height-(linkBtn_1.height+linkBtn_1.width*0.1);
+
         linkBtn_2 = game.add.button(
-          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
-          , 160+90
-            , "linkBtn", linkBtn_onClick2, this, 1, 1, 0
+          0,0, "linkBtn", linkBtn_onClick2, this, 1, 1, 0
         );
-        linkBtn_2.scale.setTo(0.4,0.4);
+        linkBtn_2.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_2.x = basket_2.x+basket_2.width-(linkBtn_1.width*1.1);
+        linkBtn_2.y = basket_2.y+basket_2.height-(linkBtn_1.height+linkBtn_1.width*0.1);
 
         linkBtn_3 = game.add.button(
-          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
-          , 160+90+90
-            , "linkBtn", linkBtn_onClick3, this, 1, 1, 0
+          0,0, "linkBtn", linkBtn_onClick3, this, 1, 1, 0
         );
-        linkBtn_3.scale.setTo(0.4,0.4);
+        linkBtn_3.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_3.x = basket_3.x+basket_3.width-(linkBtn_1.width*1.1);
+        linkBtn_3.y = basket_3.y+basket_3.height-(linkBtn_1.height+linkBtn_1.width*0.1);
 
         linkBtn_4 = game.add.button(
-          game.width - (game.cache.getImage("linkBtn").width / 2) - 30
-          , 160+90+90+90
-            , "linkBtn", linkBtn_onClick4, this, 1, 1, 0
+          0,0, "linkBtn", linkBtn_onClick4, this, 1, 1, 0
         );
-        linkBtn_4.scale.setTo(0.4,0.4);
+        linkBtn_4.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_4.x = basket_4.x+basket_4.width-(linkBtn_1.width*1.1);
+        linkBtn_4.y = basket_4.y+basket_4.height-(linkBtn_1.height+linkBtn_1.width*0.1);
 
-        after5 = game.add.text(
-          (game.cache.getImage("background").width - game.cache.getImage("resultBtn").width) / 4
-          , game.height * 0.8
-          , '5초 뒤 다음페이지로'
-          , { font: '20pt Arial', fill: '#000000' });
+        linkBtn_5 = game.add.button(
+          0,0, "linkBtn", linkBtn_onClick5, this, 1, 1, 0
+        );
+        linkBtn_5.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_5.x = linkBtn_1.x;
+        linkBtn_5.y = linkBtn_1.y;
+        linkBtn_5.visible=false;
 
-        after5.position.x = game.world.centerX - (after5.width/2);
-        after5.position.y += 30;
+        linkBtn_6 = game.add.button(
+          0,0, "linkBtn", linkBtn_onClick6, this, 1, 1, 0
+        );
+        linkBtn_6.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_6.x = linkBtn_2.x;
+        linkBtn_6.y = linkBtn_2.y;
+        linkBtn_6.visible=false;
 
-        setTimeout(function() {
-          after5.visible=false;
-          resultBtn = game.add.button(
-              (game.cache.getImage("background").width - game.cache.getImage("resultBtn").width) / 4, game.height * 0.8, "resultBtn", resultBtnClick, this, 1, 1, 0
-          );
-          resultBtn.scale.setTo(0.5, 0.5);
-        },5000);
+
+        linkBtn_7 = game.add.button(
+          0,0, "linkBtn", linkBtn_onClick7, this, 1, 1, 0
+        );
+        linkBtn_7.scale.setTo(scaleRatio,scaleRatio);
+        linkBtn_7.x = linkBtn_3.x;
+        linkBtn_7.y = linkBtn_3.y;
+        linkBtn_7.visible=false;
+
+        // resultBtn = game.add.button(
+        //       game.world.centerX , game.height * 0.8, "resultBtn", resultBtnClick, this, 4, 4, 0
+        //   );
+        // //resultBtn.inputEnabled = false;
+        // resultBtn.scale.setTo(scaleRatio,scaleRatio);
+        // resultBtn.x -= resultBtn.width/2;
+        // setTimeout(function() {
+        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+        //     resultBtn.setFrames(3);
+        // }, 300*1);
+        // setTimeout(function() {
+        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+        //     resultBtn.setFrames(2);
+        // }, 310*2);
+        // setTimeout(function() {
+        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+        //     resultBtn.setFrames(1);
+        // }, 320*3);
+        // setTimeout(function() {
+        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+        //     resultBtn.setFrames(0);
+        // }, 330*4);
+        // setTimeout(function() {
+        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
+        //     resultBtn.setFrames(5);
+        // }, 340*5);
 
 
     }
     function linkBtn_onClick1() {
-      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EB%91%90%EB%B6%80&ord=&sprice=&eprice=&cacode=11060000&pdcode=79240');
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%95%84%EB%AA%AC%EB%93%9C&ord=&sprice=&eprice=&cacode=11010000&pdcode=171');
     }
     function linkBtn_onClick2() {
-      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%9A%94%EA%B1%B0%ED%8A%B8&ord=&sprice=&eprice=&cacode=11080000&pdcode=4464');
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%B9%AB%EC%86%94&ord=&sprice=&eprice=&cacode=12040000&pdcode=61262');
     }
     function linkBtn_onClick3() {
-      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%86%8C%EA%B8%88&ord=&sprice=&eprice=&cacode=11090000&pdcode=30125');
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EA%B5%AD%EA%B0%84%EC%9E%A5&ord=&sprice=&eprice=&cacode=11090000&pdcode=0061648');
     }
     function linkBtn_onClick4() {
-      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EB%A7%8C%EB%91%90&ord=&sprice=&eprice=&cacode=11060000&pdcode=48200');
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?cacode=12020000&pdcode=61057');
+    }
+    function linkBtn_onClick5() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%A3%BC%EB%B0%A9%EC%84%B8%EC%A0%9C&ord=&sprice=&eprice=&cacode=12030000&pdcode=61435');
+    }
+    function linkBtn_onClick6() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?cacode=12020000&pdcode=61140');
+    }
+    function linkBtn_onClick7() {
+      window.open('https://www.pulmuone-lohas.com/pc/shop/plan/plan_list.do?num=63');
     }
 
     function resultBtnClick() {
@@ -885,7 +1058,6 @@ if(isMobile) {
               } else {
                 var item = easyArr[i];
                 item.visible = true;
-                for()
                 game.physics.arcade.moveToXY(item, item.x, game.height, 150);
                 i++;
               }
