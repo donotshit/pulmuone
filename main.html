@@ -71,7 +71,7 @@ if(isMobile) {
     var life = 1; // 플레이어 생명
     var timer; // 타이머
     var timerEvent; // 타이머 이벤트
-    var score = 0; // 점수
+    var score; // 점수
     var txtScore;
     var eventScore;
     var img_1; //1
@@ -79,7 +79,6 @@ if(isMobile) {
     var img_3; //3
     var img_GO; //GO!
     var isHit = false; //충돌 유무 확인
-    var player_y_record = -1; //최초 플레이어 y지점 기록
     var clear; //성공 애니메이션
     var clear_1; //성공 캐릭터 1
     var clear_2; //성공 캐릭터 2
@@ -97,9 +96,12 @@ if(isMobile) {
     var basket_6; // 장바구니 아이템 6
     var basket_7; // 장바구니 아이템 7
     var resultBtn; // 결과창 이동 버튼
-    var hard = false;
-    var easyMode;
-    var hardMode;
+    var level1;
+    var level2;
+    var level3;
+    var level4;
+    var level5;
+    var level6;
     var finalScore;//최종점수
     var final_text_1;
     var final_text_2;
@@ -119,7 +121,15 @@ if(isMobile) {
     var scaleRatio;
     var firstBtnBlink;
     var group_muteBtn;// mute on/off button always one top;
-    var page = 1; // 장바구니 페이지 변수
+    var basket_left;
+    var basket_right;
+    var restart_1; // 장바구니 카운트1
+    var restart_2; // 장바구니 카운트1
+    var restart_3; // 장바구니 카운트1
+    var restart_4; // 장바구니 카운트1
+    var restart_5; // 장바구니 카운트1
+    var restart; // 재시작 버튼
+
 
     /* -----PRELOAD----- */
     function preload() {
@@ -148,14 +158,14 @@ if(isMobile) {
         game.load.spritesheet("img_3", "./images/count/img_3.png",228,228);
         game.load.spritesheet("img_GO", "./images/count/img_GO.png",228,228);
         /* 아이템 로드 */
-        game.load.image("g_obj_01", "./images/items/g_obj_01.png");
-        game.load.image("g_obj_02", "./images/items/g_obj_02.png");
-        game.load.image("g_obj_03", "./images/items/g_obj_03.png");
-        game.load.image("g_obj_04", "./images/items/g_obj_04.png");
-        game.load.image("g_obj_05", "./images/items/g_obj_05.png");
-        game.load.image("g_obj_06", "./images/items/g_obj_06.png");
-        game.load.image("g_obj_07", "./images/items/g_obj_07.png");
-        game.load.image("g_obj_08", "./images/items/g_obj_08.png");
+        game.load.image("item_1", "./images/items/1.png");
+        game.load.image("item_2", "./images/items/2.png");
+        game.load.image("item_3", "./images/items/3.png");
+        game.load.image("item_4", "./images/items/4.png");
+        game.load.image("item_5", "./images/items/5.png");
+        game.load.image("item_6", "./images/items/6.png");
+        game.load.image("item_7", "./images/items/7.png");
+        game.load.image("trash", "./images/items/trash.png");
         game.load.image("jadamteo", "./images/items/jadamteo.png");
 
         /* 게임오버 이미지 로드 */
@@ -184,8 +194,20 @@ if(isMobile) {
 
         /* 결과창 이동 버튼 로드 */
         game.load.spritesheet("resultBtn", "./images/resultBtn.png",336,127);
+        /* 장바구니 페이지 이동 버튼 */
+        game.load.image("basket_left", "./images/basket_left.png");
+        game.load.image("basket_right", "./images/basket_right.png");
+
+
         /* 재시작 버튼 추가 */
-        game.load.image("restartBtn", "./images/restartBtn.png");
+        game.load.image("restart_1", "./images/result/1.png");
+        game.load.image("restart_2", "./images/result/2.png");
+        game.load.image("restart_3", "./images/result/3.png");
+        game.load.image("restart_4", "./images/result/4.png");
+        game.load.image("restart_5", "./images/result/5.png");
+        game.load.image("restart", "./images/result/restart.png");
+
+
 
         /* 효과음 로드*/
         game.load.audio('123', './audio/123.mp3');
@@ -207,11 +229,12 @@ if(isMobile) {
         /* 게임 처음 실행 시 수행되는 함수 */
         game.physics.startSystem(Phaser.Physics.ARCADE);
         if(isMobile) {
-          scaleRatio = (gameWidth/gameHeight)*window.devicePixelRatio;
+          scaleRatio = window.devicePixelRatio/(screen.height/screen.width);
         } else {
           scaleRatio = 0.5;
         }
-
+        score = parseFloat(0);
+        console.log(score);
         /* 음악설정 */
         a_123 = game.add.audio('123');
         a_button8 = game.add.audio('button8');
@@ -303,8 +326,8 @@ if(isMobile) {
         timer = game.time.create();
 
         // create a delayed event 1m and 30s from now
-        // timerEvent = timer.add(Phaser.Timer.MINUTE * 2, endTimer, this);
-        timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
+        timerEvent = timer.add(Phaser.Timer.MINUTE * 1, endTimer, this);
+        // timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
 
 
         /* box 그룹 생성 */
@@ -319,7 +342,12 @@ if(isMobile) {
 
 
         /* Score */
-        txtScore= game.add.text(10, 10, 'Score: 0', { font: '16pt Arial', fill: '#ffffff' });
+        var textScale;
+        if(isMobile) {
+          txtScore= game.add.text(10, 10, 'Score: 0', { font: '64pt Arial', fill: '#ffffff' });
+        } else {
+          txtScore= game.add.text(10, 10, 'Score: 0', { font: '32pt Arial', fill: '#ffffff' });
+        }
         txtScore.position.x = game.world.centerX-(txtScore.width/2)
         txtScore.visible = false;
     }
@@ -346,7 +374,7 @@ if(isMobile) {
 
             //  400 is the speed it will move towards the mouse
             //game.physics.arcade.moveToPointer(player, 400);
-            game.physics.arcade.moveToXY(player, game.input.x, game.height, 1000);
+            game.physics.arcade.moveToXY(player, game.input.x, game.height, 3000);
             if (isHit) {
               if(good) {
                 player.animations.play("good");
@@ -464,20 +492,24 @@ if(isMobile) {
     function enemyHitsPlayer(playerPoint, enemy) {
       a_object.play();
       //console.log(enemy['score']);
-        if (player_y_record == -1) {
-            player_y_record = player.y;
-        }
+        var input = parseInt(enemy['score']);
         enemy.kill();
         isHit = true;
-        if(enemy['score']>0) {
+
+        if(input>0) {
           good=true;
         } else {
           good=false;
         }
         //20 만큼 점프
-        player.y = player_y_record - 10;
+        //player.y = game.height-30;
         //life = 0;
-        score+=enemy['score'];
+        console.log(parseInt(input));
+        console.log(parseInt(score));
+
+        console.log(parseInt(input)+parseInt(score));
+        score = parseInt(input)+parseInt(score);
+        console.log(score);
         txtScore.setText("Score: " + score);
         setTimeout(function() {
             isHit = false;
@@ -500,7 +532,7 @@ if(isMobile) {
           inst_bg = game.add.sprite(game.world.centerX,gameHeight/16,'inst_bg');
           inst_bg.scale.setTo(scaleRatio, scaleRatio);
           inst_bg.x -= inst_bg.width/2;
-        }, 1000);
+        }, 700);
 
         /* 게임 시작 전 화면 설정 */
         setTimeout(function() {
@@ -509,7 +541,7 @@ if(isMobile) {
           inst_1.scale.setTo(scaleRatio, scaleRatio);
           inst_1.x -= inst_1.width/2;
           inst_1.y = inst_bg.y+(inst_bg.height/3.5);
-        }, 1000*2);
+        }, 700*2);
 
         /* 게임 시작 전 화면 설정 */
         setTimeout(function() {
@@ -518,7 +550,7 @@ if(isMobile) {
           inst_2.scale.setTo(scaleRatio, scaleRatio);
           inst_2.x -= inst_2.width/2;
           inst_2.y = inst_1.y+inst_1.height+(inst_1.height/10);
-        }, 1000*3);
+        }, 700*3);
 
         /* 게임 시작 전 화면 설정 */
         setTimeout(function() {
@@ -527,10 +559,7 @@ if(isMobile) {
           inst_3.scale.setTo(scaleRatio, scaleRatio);
           inst_3.x -= inst_3.width/2;
           inst_3.y = inst_2.y+inst_2.height+(inst_2.height/10);
-        }, 1000*4);
-
-
-
+        }, 700*4);
 
         setTimeout(function() {
             a_button8.play();
@@ -539,7 +568,8 @@ if(isMobile) {
             );
             startBtn.scale.setTo(scaleRatio, scaleRatio);
             startBtn.x -= startBtn.width/2;
-        }, 1000*5);
+            startBtn.y = inst_bg.y+inst_bg.height+(startBtn.height/3);
+        }, 700*5);
 
     }
 
@@ -583,9 +613,11 @@ if(isMobile) {
         }
         basketBtn.destroy();
 
-        basket_board = game.add.sprite(game.world.centerX,gameHeight/16,'basket_board');
+        basket_board = game.add.sprite(game.world.centerX,gameHeight/20,'basket_board');
         basket_board.scale.setTo(scaleRatio, scaleRatio);
         basket_board.x -= basket_board.width/2;
+
+
 
           basket_1 = game.add.sprite(game.world.centerX,game.height/16,'basket_1');
           basket_1.scale.setTo(scaleRatio, scaleRatio);
@@ -678,35 +710,68 @@ if(isMobile) {
         linkBtn_7.y = linkBtn_3.y;
         linkBtn_7.visible=false;
 
-        // resultBtn = game.add.button(
-        //       game.world.centerX , game.height * 0.8, "resultBtn", resultBtnClick, this, 4, 4, 0
-        //   );
-        // //resultBtn.inputEnabled = false;
-        // resultBtn.scale.setTo(scaleRatio,scaleRatio);
-        // resultBtn.x -= resultBtn.width/2;
-        // setTimeout(function() {
-        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-        //     resultBtn.setFrames(3);
-        // }, 300*1);
-        // setTimeout(function() {
-        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-        //     resultBtn.setFrames(2);
-        // }, 310*2);
-        // setTimeout(function() {
-        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-        //     resultBtn.setFrames(1);
-        // }, 320*3);
-        // setTimeout(function() {
-        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-        //     resultBtn.setFrames(0);
-        // }, 330*4);
-        // setTimeout(function() {
-        //     // pop_GO = game.add.tween(img_GO.scale).to( { x: 0, y: 0 }, 10, Phaser.Easing.Elastic.In, true);
-        //     resultBtn.setFrames(5);
-        // }, 340*5);
+        basket_left = game.add.button(
+          game.world.centerX,0, "basket_left", basket2left, this, 1, 1, 0
+        );
+        basket_left.scale.setTo(scaleRatio/3,scaleRatio/3);
+        //basket_left.x -= basket_left.width/2;
+        basket_left.x = basket_board.x;
+        basket_left.y = basket_board.y+basket_board.height+(basket_left.height/3);
+        basket_left.visible=false;
 
+        basket_right = game.add.button(
+          game.world.centerX,0, "basket_right", basket2right, this, 1, 1, 0
+        );
+        basket_right.scale.setTo(scaleRatio/3,scaleRatio/3);
+        //basket_right.x -= basket_left.width/2;
+        basket_right.x -= basket_board.x+basket_board.width;
+        basket_right.y = basket_board.y+basket_board.height+(basket_left.height/3);
+
+        var millSec = 1000;
+        setRestart_5(millSec);
 
     }
+
+    function basket2left() {
+      basket_1.visible = true;
+      linkBtn_1.visible = true;
+      basket_2.visible = true;
+      linkBtn_2.visible = true;
+      basket_3.visible = true;
+      linkBtn_3.visible = true;
+      basket_4.visible = true;
+      linkBtn_4.visible = true;
+      basket_right.visible = true;
+
+      basket_5.visible = false;
+      linkBtn_5.visible = false;
+      basket_6.visible = false;
+      linkBtn_6.visible = false;
+      basket_7.visible = false;
+      linkBtn_7.visible = false;
+      basket_left.visible = false;
+    }
+
+    function basket2right() {
+      basket_1.visible = false;
+      linkBtn_1.visible = false;
+      basket_2.visible = false;
+      linkBtn_2.visible = false;
+      basket_3.visible = false;
+      linkBtn_3.visible = false;
+      basket_4.visible = false;
+      linkBtn_4.visible = false;
+      basket_right.visible = false;
+
+      basket_5.visible = true;
+      linkBtn_5.visible = true;
+      basket_6.visible = true;
+      linkBtn_6.visible = true;
+      basket_7.visible = true;
+      linkBtn_7.visible = true;
+      basket_left.visible = true;
+    }
+
     function linkBtn_onClick1() {
       window.open('https://www.pulmuone-lohas.com/pc/shop/product/prd_view.do?brcode=&sw=%EC%95%84%EB%AA%AC%EB%93%9C&ord=&sprice=&eprice=&cacode=11010000&pdcode=171');
     }
@@ -797,11 +862,7 @@ if(isMobile) {
 
     function count_3(millisecondsToWait, ratio) {
         a_123.play();
-        img_3 = game.add.sprite(game.world.centerX,game.world.height/5,'img_3');
-        img_3.scale.setTo(scaleRatio,scaleRatio);
-        img_3.position.x -= img_3.width/2;
-        img_3.animations.add('start',[0,1,2,3,4,5,6,7,8,9],30,false);
-        img_3.animations.play('start');
+        initGame();
         setTimeout(function() {
             img_3.destroy();
             count_2(millisecondsToWait);
@@ -816,282 +877,822 @@ if(isMobile) {
         count_3(millisecondsToWait);
     }
 
+    function setRestart_5(millSec) {
+      restart_5 = game.add.image(
+        game.world.centerX , game.height * 0.8, "restart_5"
+      );
+      restart_5.scale.setTo(scaleRatio,scaleRatio);
+      restart_5.x -= restart_5.width/2;
+      restart_5.y = basket_left.y+basket_left.height+(basket_left.height/3);
+      setTimeout(function() {
+        restart_5.destroy();
+        setRestart_4(millSec);
+      }, millSec);
+    }
+
+    function setRestart_4(millSec) {
+      restart_4 = game.add.image(
+        game.world.centerX , game.height * 0.8, "restart_4"
+      );
+      restart_4.scale.setTo(scaleRatio,scaleRatio);
+      restart_4.x -= restart_4.width/2;
+      restart_4.y = basket_left.y+basket_left.height+(basket_left.height/3);
+      setTimeout(function() {
+        restart_4.destroy();
+        setRestart_3(millSec);
+      }, millSec);
+    }
+
+    function setRestart_3(millSec) {
+      restart_3 = game.add.image(
+        game.world.centerX , game.height * 0.8, "restart_3"
+      );
+      restart_3.scale.setTo(scaleRatio,scaleRatio);
+      restart_3.x -= restart_3.width/2;
+      restart_3.y = basket_left.y+basket_left.height+(basket_left.height/3);
+      setTimeout(function() {
+        restart_3.destroy();
+        setRestart_2(millSec);
+      }, millSec);
+    }
+
+    function setRestart_2(millSec) {
+      restart_2 = game.add.image(
+        game.world.centerX , game.height * 0.8, "restart_2"
+      );
+      restart_2.scale.setTo(scaleRatio,scaleRatio);
+      restart_2.x -= restart_2.width/2;
+      restart_2.y = basket_left.y+basket_left.height+(basket_left.height/3);
+      setTimeout(function() {
+        restart_2.destroy();
+        setRestart_1(millSec);
+      }, millSec);
+    }
+
+    function setRestart_1(millSec) {
+      restart_1 = game.add.image(
+        game.world.centerX , game.height * 0.8, "restart_1"
+      );
+      restart_1.scale.setTo(scaleRatio,scaleRatio);
+      restart_1.x -= restart_1.width/2;
+      restart_1.y = basket_left.y+basket_left.height+(basket_left.height/3);
+      setTimeout(function() {
+        restart_1.destroy();
+        setRestart(millSec);
+      }, millSec);
+    }
+
+    function setRestart(millSec) {
+      restart = game.add.button(
+        game.world.centerX , game.height * 0.8, "restart",restartBtnClick
+      );
+      restart.scale.setTo(scaleRatio,scaleRatio);
+      restart.x -= restart.width/2;
+      restart.y = basket_left.y+basket_left.height+(basket_left.height/3);
+    }
+
+    function initGame() {
+      for (var i = 0; i < game.width / 10; i++) {
+          var rowBox = box.create(i * 10, 80, "box");
+          rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
+          rowBox = box.create(i * 10, game.height - 10, "box");
+          rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
+      }
+      for (var j = 9; j < game.height / 10; j++) {
+          var colBox = box.create(0, j * 10, "box");
+          colBox.body.immovable = true; // box가 움직이지 못하도록 설정
+          colBox = box.create(game.width - 10, j * 10, "box");
+          colBox.body.immovable = true; // box가 움직이지 못하도록 설정
+      }
+
+      /* 플레이어 추가 */
+      player = game.add.sprite(game.world.centerX,game.world.centerY, "player");
+      player.scale.setTo(scaleRatio, scaleRatio);
+      game.physics.arcade.enable(player);
+      // 평상시 뛰는 애니메이션
+      player.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
+      // 긍정적 아이템 습득시 애니메이션
+      player.animations.add("good", [9], 10, false);
+      // 부정적 아이템 습득시 애니메이션
+      player.animations.add("bad", [8], 10, false);
+      img_3 = game.add.sprite(game.world.centerX,game.world.height/5,'img_3');
+      img_3.scale.setTo(scaleRatio,scaleRatio);
+      img_3.position.x -= img_3.width/2;
+      img_3.animations.add('start',[0,1,2,3,4,5,6,7,8,9],30,false);
+      img_3.animations.play('start');
+    }
+
     function gameStart() {
       a_game_bgm.play();
-        for (var i = 0; i < game.width / 10; i++) {
-            var rowBox = box.create(i * 10, 80, "box");
-            rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
-            rowBox = box.create(i * 10, game.height - 10, "box");
-            rowBox.body.immovable = true; // box가 움직이지 못하도록 설정
-        }
-        for (var j = 9; j < game.height / 10; j++) {
-            var colBox = box.create(0, j * 10, "box");
-            colBox.body.immovable = true; // box가 움직이지 못하도록 설정
-            colBox = box.create(game.width - 10, j * 10, "box");
-            colBox.body.immovable = true; // box가 움직이지 못하도록 설정
-        }
 
-        /* 플레이어 추가 */
-        player = game.add.sprite((game.width) / 2, (game.height) / 2, "player");
-        player.scale.setTo(0.5, 0.5);
-        game.physics.arcade.enable(player);
-        // 평상시 뛰는 애니메이션
-        player.animations.add("run", [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-        // 긍정적 아이템 습득시 애니메이션
-        player.animations.add("good", [9], 10, false);
-        // 부정적 아이템 습득시 애니메이션
-        player.animations.add("bad", [8], 10, false);
 
         enemy.enableBody = true;
         enemy.physicsBodyType = Phaser.Physics.ARCADE;
-
-
-        /* 아이템 미리 로드 */
-        var preEasyArr = [];
-        var easyArr = [];
-        var preHardArr = [];
-        var hardArr = [];
-
-        /*
-          EASY MODE GOOD ITEMS
-        */
-
-        //초록두부
-        for (var i = 0; i < 5; i++) {
-            var cache = game.cache.getImage("g_obj_01").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_01");
-            item.visible = false;
-            item['score']=1;
-            preEasyArr.push(item);
-        }
-        //초록만두
-        for (var i = 0; i < 5; i++) {
-            var cache = game.cache.getImage("g_obj_03").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_03");
-            item.visible = false;
-            item['score']=1;
-            preEasyArr.push(item);
-        }
-        //초록소금
-        for (var i = 0; i < 5; i++) {
-            var cache = game.cache.getImage("g_obj_05").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_05");
-            item.visible = false;
-            item['score']=1;
-            preEasyArr.push(item);
-        }
-        //초록 액티비아
-        for (var i = 0; i < 5; i++) {
-            var cache = game.cache.getImage("g_obj_07").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_07");
-            item.visible = false;
-            item['score']=1;
-            preEasyArr.push(item);
-        }
-        //지담터
-        for (var i = 0; i < 3; i++) {
-            var cache = game.cache.getImage("jadamteo").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "jadamteo");
-            item.visible = false;
-            item['score']=2;
-            preEasyArr.push(item);
-        }
-
-        /*
-          EASY MODE BAD ITEMS
-        */
-
-        //검정두부
-        for (var i = 0; i < 2; i++) {
-            var cache = game.cache.getImage("g_obj_02").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_02");
-            item.visible = false;
-            item['score']=-2;
-            preEasyArr.push(item);
-        }
-        //검정만두
-        for (var i = 0; i < 2; i++) {
-            var cache = game.cache.getImage("g_obj_04").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_04");
-            item.visible = false;
-            item['score']=-1;
-
-            preEasyArr.push(item);
-        }
-        //검정소금
-        for (var i = 0; i < 2; i++) {
-            var cache = game.cache.getImage("g_obj_06").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_06");
-            item.visible = false;
-            item['score']=-1;
-
-            preEasyArr.push(item);
-        }
-        //검정 액티비아
-        for (var i = 0; i < 2; i++) {
-            var cache = game.cache.getImage("g_obj_08").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_08");
-            item.visible = false;
-            item['score']=-1;
-
-            preEasyArr.push(item);
-        }
-
-        /*
-          >>>>> HARD MODE GOOD ITEMS <<<<<<
-        */
-
-        //초록두부
-        for (var i = 0; i < 25; i++) {
-            var cache = game.cache.getImage("g_obj_01").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_01");
-            item.visible = false;
-            item['score']=1;
-            preHardArr.push(item);
-        }
-        //초록만두
-        for (var i = 0; i < 25; i++) {
-            var cache = game.cache.getImage("g_obj_03").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_03");
-            item.visible = false;
-            item['score']=1;
-            preHardArr.push(item);
-        }
-        //초록소금
-        for (var i = 0; i < 25; i++) {
-            var cache = game.cache.getImage("g_obj_05").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_05");
-            item.visible = false;
-            item['score']=1;
-            preHardArr.push(item);
-        }
-        //초록 액티비아
-        for (var i = 0; i < 25; i++) {
-            var cache = game.cache.getImage("g_obj_07").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_07");
-            item.visible = false;
-            item['score']=1;
-            preHardArr.push(item);
-        }
-        //지담터
-        for (var i = 0; i < 10; i++) {
-            var cache = game.cache.getImage("jadamteo").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "jadamteo");
-            item.visible = false;
-            item['score']=2;
-            preHardArr.push(item);
-        }
-
-        /*
-          >>>>> HARD MODE BAD ITEMS <<<<<<
-        */
-
-        //검정두부
-        for (var i = 0; i < 6; i++) {
-            var cache = game.cache.getImage("g_obj_02").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_02");
-            item.visible = false;
-            item['score']=-1;
-            preHardArr.push(item);
-        }
-        //검정만두
-        for (var i = 0; i < 6; i++) {
-            var cache = game.cache.getImage("g_obj_04").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_04");
-            item.visible = false;
-            item['score']=-1;
-
-            preHardArr.push(item);
-        }
-        //검정소금
-        for (var i = 0; i < 6; i++) {
-            var cache = game.cache.getImage("g_obj_06").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_06");
-            item.visible = false;
-            item['score']=-1;
-
-            preHardArr.push(item);
-        }
-        //검정 액티비아
-        for (var i = 0; i < 6; i++) {
-            var cache = game.cache.getImage("g_obj_08").width;
-            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
-            var item = enemy.create(x, 80, "g_obj_08");
-            item.visible = false;
-            item['score']=-1;
-
-            preHardArr.push(item);
-        }
-
-
-        /*
-          SHUFFLE ITEM ARRAY
-        */
-        easyArr = shuffleArray(preEasyArr);
-        hardArr = shuffleArray(preHardArr);
-
-        var i = 0;
-        /* 아이템 낙하 */
-        easyMode = setInterval(
-            function() {
-              if (i == easyArr.length) {
-                hard=true;
-                i=0;
-                destroy(easyMode);
-              } else {
-                var item = easyArr[i];
-                item.visible = true;
-                game.physics.arcade.moveToXY(item, item.x, game.height, 150);
-                i++;
-              }
-            }, 1290
-        );
-
-        hardMode = setInterval(
-            function() {
-              if(hard) {
-                if (i == hardArr.length) {
-                  hard=true;
-                  i=0;
-                  destroy(hardMode);
-                } else {
-                  var item = hardArr[i];
-                  item.visible = true;
-                  game.physics.arcade.moveToXY(item, item.x, game.height, 300);
-                  i++;
-                }
-              }
-
-            }, 597
-        );
-
-        enemy.setAll("outOfBoundsKill", true);
-        enemy.setAll("checkWorldBounds", true);
 
         txtScore.visible = true;
 
         // start the timer
         timer.start();
 
-    }
+        /* 아이템 미리 로드 */
+        var pre_lv1 = [];
+        var lv1 = [];
 
+        var pre_lv2 = [];
+        var lv2 = [];
+
+        var pre_lv2 = [];
+        var lv2 = [];
+
+        var pre_lv3 = [];
+        var lv3 = [];
+
+        var pre_lv4 = [];
+        var lv4 = [];
+
+        var pre_lv5 = [];
+        var lv5 = [];
+
+        var pre_lv6 = [];
+        var lv6 = [];
+
+        /*
+          60~50;
+        */
+
+        //1
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.scale.set(scaleRatio/2);
+            item.visible = false;
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //2
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //3
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        ///4
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //5
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //6
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //7
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv1.push(item);
+        }
+        //trash
+        for (var i = 0; i < 3; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv1.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv1.push(item);
+        }
+
+        /*
+          50~40;
+        */
+
+        //1
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //2
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //3
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        ///4
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //5
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //6
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //7
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv2.push(item);
+        }
+        //trash
+        for (var i = 0; i < 3; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv2.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv2.push(item);
+        }
+
+        /*
+          40~30;
+        */
+
+        //1
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //2
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //3
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        ///4
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //5
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //6
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //7
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv3.push(item);
+        }
+        //trash
+        for (var i = 0; i < 4; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv3.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 3; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv3.push(item);
+        }
+
+        /*
+          30~20;
+        */
+
+        //1
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //2
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //3
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        ///4
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //5
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //6
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //7
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv4.push(item);
+        }
+        //trash
+        for (var i = 0; i < 6; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv4.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 4; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv4.push(item);
+        }
+
+        /*
+          20~10;
+        */
+
+        //1
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //2
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //3
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        ///4
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //5
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //6
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //7
+        for (var i = 0; i < 1; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv5.push(item);
+        }
+        //trash
+        for (var i = 0; i < 7; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv5.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 5; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv5.push(item);
+        }
+
+        /*
+          10~0;
+        */
+
+        //1
+        for (var i = 0; i < 3; i++) {
+            var cache = (game.cache.getImage("item_1").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_1");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //2
+        for (var i = 0; i < 3; i++) {
+            var cache = (game.cache.getImage("item_2").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_2");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //3
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_3").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_3");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        ///4
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_4").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_4");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //5
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_5").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_5");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //6
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_6").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_6");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //7
+        for (var i = 0; i < 2; i++) {
+            var cache = (game.cache.getImage("item_7").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "item_7");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']=1;
+            pre_lv6.push(item);
+        }
+        //trash
+        for (var i = 0; i < 8; i++) {
+            var cache = (game.cache.getImage("trash").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "trash");
+            item.visible = false;
+            item.scale.set(scaleRatio/2);
+            item['score']= -1;
+            pre_lv6.push(item);
+        }
+        //지담터
+        for (var i = 0; i < 6; i++) {
+            var cache = (game.cache.getImage("jadamteo").width)*scaleRatio;
+            var x = game.rnd.integerInRange(10, game.width - (cache + 10));
+            var item = enemy.create(x, 80, "jadamteo");
+            item.visible = false;
+            item.scale.set(scaleRatio*2);
+            item['score']=2;
+            pre_lv6.push(item);
+        }
+
+        //enemy.scale.set(scaleRatio,scaleRatio);
+        enemy.setAll("outOfBoundsKill", true);
+        enemy.setAll("checkWorldBounds", true);
+        /*
+          SHUFFLE ITEM ARRAY
+        */
+        lv1 = shuffleArray(pre_lv1);
+        lv2 = shuffleArray(pre_lv2);
+        lv3 = shuffleArray(pre_lv3);
+        lv4 = shuffleArray(pre_lv4);
+        lv5 = shuffleArray(pre_lv5);
+        lv6 = shuffleArray(pre_lv6);
+
+        var i = 0;
+        /* 아이템 낙하 */
+        level1 = setInterval(
+            function() {
+              if (i == lv1.length) {
+                i=0;
+                destroy(level1);
+                level2 = setInterval(
+                    function() {
+                      if (i == lv2.length) {
+                        i=0;
+                        destroy(level2);
+                        level3 = setInterval(
+                            function() {
+                              if (i == lv3.length) {
+                                i=0;
+                                destroy(level3);
+                                level4 = setInterval(
+                                    function() {
+                                      if (i == lv4.length) {
+                                        i=0;
+                                        destroy(level4);
+                                        level5 = setInterval(
+                                            function() {
+                                              if (i == lv5.length) {
+                                                i=0;
+                                                destroy(level5);
+                                                level6 = setInterval(
+                                                    function() {
+                                                      if (i == lv6.length) {
+                                                        i=0;
+                                                        destroy(level6);
+                                                      } else {
+                                                        var item = lv6[i];
+                                                        item.visible = true;
+                                                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*6);
+                                                        i++;
+                                                      }
+                                                    }, 1000*10/lv6.length
+                                                );
+                                              } else {
+                                                var item = lv5[i];
+                                                item.visible = true;
+                                                game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*5);
+                                                i++;
+                                              }
+                                            }, 1000*10/lv5.length
+                                        );
+                                      } else {
+                                        var item = lv4[i];
+                                        item.visible = true;
+                                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*4);
+                                        i++;
+                                      }
+                                    }, 1000*10/lv4.length
+                                );
+                              } else {
+                                var item = lv3[i];
+                                item.visible = true;
+                                game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*3);
+                                i++;
+                              }
+                            }, 1000*10/lv3.length
+                        );
+                      } else {
+                        var item = lv2[i];
+                        item.visible = true;
+                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*2);
+                        i++;
+                      }
+                    }, 1000*10/lv2.length
+                );
+              } else {
+                var item = lv1[i];
+                item.visible = true;
+                game.physics.arcade.moveToXY(item, item.x, game.height, 120+30*1);
+                i++;
+              }
+            }, 1000*10/lv1.length
+        );
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
     /**
      * Randomize array element order in-place.
      * Using Durstenfeld shuffle algorithm.
