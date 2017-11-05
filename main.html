@@ -234,7 +234,6 @@ if(isMobile) {
           scaleRatio = 0.5;
         }
         score = parseFloat(0);
-        console.log(score);
         /* 음악설정 */
         a_123 = game.add.audio('123');
         a_button8 = game.add.audio('button8');
@@ -326,8 +325,8 @@ if(isMobile) {
         timer = game.time.create();
 
         // create a delayed event 1m and 30s from now
-        timerEvent = timer.add(Phaser.Timer.MINUTE * 1, endTimer, this);
-        // timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
+        // timerEvent = timer.add(Phaser.Timer.MINUTE * 1, endTimer, this);
+        timerEvent = timer.add(Phaser.Timer.SECOND * 1, endTimer, this);
 
 
         /* box 그룹 생성 */
@@ -491,7 +490,6 @@ if(isMobile) {
 
     function enemyHitsPlayer(playerPoint, enemy) {
       a_object.play();
-      //console.log(enemy['score']);
         var input = parseInt(enemy['score']);
         enemy.kill();
         isHit = true;
@@ -504,12 +502,8 @@ if(isMobile) {
         //20 만큼 점프
         //player.y = game.height-30;
         //life = 0;
-        console.log(parseInt(input));
-        console.log(parseInt(score));
 
-        console.log(parseInt(input)+parseInt(score));
         score = parseInt(input)+parseInt(score);
-        console.log(score);
         txtScore.setText("Score: " + score);
         setTimeout(function() {
             isHit = false;
@@ -713,8 +707,8 @@ if(isMobile) {
         basket_left = game.add.button(
           game.world.centerX,0, "basket_left", basket2left, this, 1, 1, 0
         );
-        basket_left.scale.setTo(scaleRatio/3,scaleRatio/3);
-        //basket_left.x -= basket_left.width/2;
+        basket_left.scale.setTo(scaleRatio/2,scaleRatio/2);
+        basket_left.x -= basket_left.width/2;
         basket_left.x = basket_board.x;
         basket_left.y = basket_board.y+basket_board.height+(basket_left.height/3);
         basket_left.visible=false;
@@ -722,9 +716,9 @@ if(isMobile) {
         basket_right = game.add.button(
           game.world.centerX,0, "basket_right", basket2right, this, 1, 1, 0
         );
-        basket_right.scale.setTo(scaleRatio/3,scaleRatio/3);
-        //basket_right.x -= basket_left.width/2;
-        basket_right.x -= basket_board.x+basket_board.width;
+        basket_right.scale.setTo(scaleRatio/2,scaleRatio/2);
+        // basket_right.x -= basket_left.width/2;
+        basket_right.x = basket_board.x+basket_board.width-basket_left.width;
         basket_right.y = basket_board.y+basket_board.height+(basket_left.height/3);
 
         var millSec = 1000;
@@ -1634,7 +1628,7 @@ if(isMobile) {
                                                       } else {
                                                         var item = lv6[i];
                                                         item.visible = true;
-                                                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*6);
+                                                        game.physics.arcade.moveToXY(item, item.x, game.height, (150+30*6)*3);
                                                         i++;
                                                       }
                                                     }, 1000*10/lv6.length
@@ -1642,7 +1636,7 @@ if(isMobile) {
                                               } else {
                                                 var item = lv5[i];
                                                 item.visible = true;
-                                                game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*5);
+                                                game.physics.arcade.moveToXY(item, item.x, game.height, (150+30*5)*3);
                                                 i++;
                                               }
                                             }, 1000*10/lv5.length
@@ -1650,7 +1644,7 @@ if(isMobile) {
                                       } else {
                                         var item = lv4[i];
                                         item.visible = true;
-                                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*4);
+                                        game.physics.arcade.moveToXY(item, item.x, game.height, (150+30*4)*3);
                                         i++;
                                       }
                                     }, 1000*10/lv4.length
@@ -1658,7 +1652,7 @@ if(isMobile) {
                               } else {
                                 var item = lv3[i];
                                 item.visible = true;
-                                game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*3);
+                                game.physics.arcade.moveToXY(item, item.x, game.height, (150+30*3)*3);
                                 i++;
                               }
                             }, 1000*10/lv3.length
@@ -1666,7 +1660,7 @@ if(isMobile) {
                       } else {
                         var item = lv2[i];
                         item.visible = true;
-                        game.physics.arcade.moveToXY(item, item.x, game.height, 150+30*2);
+                        game.physics.arcade.moveToXY(item, item.x, game.height, (150+30*2)*3);
                         i++;
                       }
                     }, 1000*10/lv2.length
@@ -1674,7 +1668,7 @@ if(isMobile) {
               } else {
                 var item = lv1[i];
                 item.visible = true;
-                game.physics.arcade.moveToXY(item, item.x, game.height, 120+30*1);
+                game.physics.arcade.moveToXY(item, item.x, game.height, (120+30*1)*3);
                 i++;
               }
             }, 1000*10/lv1.length
